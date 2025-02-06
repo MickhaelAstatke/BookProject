@@ -15,3 +15,26 @@ This application, called **The EpicBook**, is an online bookstore that allows us
 The home page displays a gallery of books with options to Add to **Cart**. The layout is designed to be intuitive, with clear navigation and aesthetic visuals.
 
 ![Screenshot 2025-02-06 at 08 04 51](https://github.com/user-attachments/assets/acb108a2-37b5-406d-8294-76938d9f1a3a)
+
+I see you've uploaded a screenshot of the **menu** section of your application. Based on this, I'll add a section in the documentation explaining the menu functionality.
+
+---
+
+## 📌 Menu Overview
+The **menu** in *The EpicBook!* provides users with quick access to different book categories. It ensures a seamless browsing experience by allowing users to filter books based on their interests.
+
+### Menu Features
+1. Category Selection: Users can choose from various categories, such as:
+   - NYT (New York Times Bestsellers)
+   - Classic
+   - Children’s Books
+   - Top 9
+   - Social Justice
+   - Fantasy
+
+2. Smooth Navigation: When a user selects a category, the book list updates dynamically to show only the books within that category.
+
+3. Responsive Design: The menu is designed to collapse or expand based on screen size, making it accessible on both desktop and mobile devices.
+
+![Screenshot 2025-02-06 at 08 11 14](https://github.com/user-attachments/assets/d1ebbf52-adc2-46d4-918b-bf17b028fa76)
+
