@@ -22,6 +22,10 @@ The **EpicBook!** project is an online bookstore application that allows users t
 
 #### Note: [Installation, Configuration & Troubleshooting Guide](https://github.com/pravinmishraaws/theepicbook/blob/main/Installation%20%26%20Configuration%20Guide.md)
 
+## Application Architecture
+
+![Screenshot 2025-02-06 at 12 44 40](https://github.com/user-attachments/assets/50df00cb-ee85-4e9d-beb6-f63a862fbb2a)
+
 
 ---
 
