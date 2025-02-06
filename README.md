@@ -40,3 +40,14 @@ The **menu** in *The EpicBook!* provides users with quick access to different bo
 
 ![Screenshot 2025-02-06 at 08 11 14](https://github.com/user-attachments/assets/d1ebbf52-adc2-46d4-918b-bf17b028fa76)
 
+The **Gallery** section is another essential part of the application. Based on the uploaded screenshot, I'll now document this feature in the overview.
+
+---
+
+## Gallery Section Overview*
+The **Gallery** section in *The EpicBook!* provides users with a visually appealing way to browse through a collection of books. It is designed for a seamless exploration experience.
+
+![Screenshot 2025-02-06 at 08 16 45](https://github.com/user-attachments/assets/7f394ca5-ff3a-4b77-bdc6-22c3c09dbbb3)
+
+---
+
