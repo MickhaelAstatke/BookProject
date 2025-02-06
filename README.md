@@ -51,3 +51,24 @@ The **Gallery** section in *The EpicBook!* provides users with a visually appeal
 
 ---
 
+The **Product Details** section provides in-depth information about each book. Based on the uploaded screenshot, I'll document this feature in the overview.
+
+---
+
+## Product Details Section Overview
+The **Product Details** page provides users with a detailed view of a selected book. This feature enhances the shopping experience by offering essential information before making a purchase.
+
+### Features of the Product Details Page
+1. **Book Cover Preview:** A high-resolution image of the book cover is displayed.
+2. **Description Section:** A brief synopsis of the book gives users an idea of the storyline.
+3. **Genre Tag:** Indicates the category of the book (e.g., NYT Bestsellers, Classics, etc.).
+4. **Publication Year:** Displays the year the book was published.
+5. **Availability Count:** Shows the number of copies available in stock.
+6. **"Add to Cart" Button:** Allows users to add the book to their shopping cart directly from the details page.
+7. **Modal Popup Design:** The book details appear in a popup (modal), ensuring users can quickly view the details without navigating to another page.
+
+![Screenshot 2025-02-06 at 08 19 14](https://github.com/user-attachments/assets/db85859c-8992-42f2-8e59-f31d794fd805)
+
+---
+
+
