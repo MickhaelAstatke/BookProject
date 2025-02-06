@@ -20,6 +20,8 @@ The **EpicBook!** project is an online bookstore application that allows users t
 
 7️⃣ Checkout & Order Confirmation
 
+Note: Installation, Configuration & Troubleshooting Guide(https://github.com/pravinmishraaws/theepicbook/blob/main/Installation%20%26%20Configuration%20Guide.md)
+
 
 ---
 
