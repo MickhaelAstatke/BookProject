@@ -150,12 +150,12 @@ The **Checkout Process** finalizes the purchase and confirms the order placement
 
 ### 🛠️ Key Components
 
-- ** Frontend**: HTML, CSS, JavaScript for UI rendering
-- ** Backend**: Node.js + Express.js handles API requests
-- ** Database**: MySQL for storing books, orders, and user data
-- ** Reverse Proxy**: Nginx to handle request forwarding
+- **Frontend**: HTML, CSS, JavaScript for UI rendering
+- **Backend**: Node.js + Express.js handles API requests
+- **Database**: MySQL for storing books, orders, and user data
+- **Reverse Proxy**: Nginx to handle request forwarding
 
-** Cloud Services (Future)**:  AWS EC2, RDS, S3, CloudFront, Lambda
+**Cloud Services (Future)**:  AWS EC2, RDS, S3, CloudFront, Lambda
 
 ---
 
