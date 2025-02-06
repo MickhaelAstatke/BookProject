@@ -1,7 +1,7 @@
-# The EpicBook! - Installation & Configuration Guide
+# The EpicBook! - Installation, Configuration & Troubleshooting Guide
 
 ## 📌 Introduction
-This document provides step-by-step instructions on how to install, configure, and run **The EpicBook!** application on **Amazon Linux 2** or a local machine.
+This document provides step-by-step instructions on how to install, configure, and troubleshoot **The EpicBook!** application on **Amazon Linux 2** or a local machine.
 
 ---
 
@@ -28,6 +28,13 @@ Move into the project directory:
 cd theepicbook
 ```
 
+### 🚨 Troubleshooting
+**Issue:** "git command not found"
+- **Solution:** Install Git using `sudo yum install git -y`
+
+**Issue:** "Permission denied" error when cloning repository
+- **Solution:** Ensure SSH keys are properly set up for GitHub or use HTTPS cloning.
+
 ---
 
 ## **3️⃣ Install MySQL Server 5.7**
@@ -41,15 +48,25 @@ sudo service mysqld start
 sudo service mysqld status
 ```
 
-Upon installation, MySQL generates a temporary root password. Retrieve it using:
+Retrieve the temporary MySQL root password:
 ```bash
 grep 'temporary password' /var/log/mysqld.log
 ```
 
+### 🚨 Troubleshooting
+**Issue:** "mysql: command not found"
+- **Solution:** Verify MySQL installation with `mysql --version`. If missing, reinstall using the above steps.
+
+**Issue:** "Access denied for user 'root'@'localhost'"
+- **Solution:** Use `sudo mysql_secure_installation` to set up a new root password.
+
+**Issue:** "ERROR 2002 (HY000): Can't connect to local MySQL server through socket"
+- **Solution:** Ensure MySQL is running with `sudo service mysqld restart`. If the issue persists, check the MySQL socket file location (`/var/lib/mysql/mysql.sock`).
+
 ---
 
 ## **4️⃣ Install Node.js & npm**
-To install Node.js and npm using **NVM** (Node Version Manager):
+To install Node.js and npm using **NVM**:
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 source ~/.nvm/nvm.sh
@@ -57,27 +74,34 @@ nvm install v17
 node -v
 ```
 
+### 🚨 Troubleshooting
+**Issue:** "node: command not found"
+- **Solution:** Ensure `nvm` is properly sourced using `source ~/.nvm/nvm.sh`
+
+**Issue:** "NVM installation failed"
+- **Solution:** Manually add `export NVM_DIR="$HOME/.nvm"` to `~/.bashrc` and source it.
+
+**Issue:** "EACCES: permission denied when installing npm packages"
+- **Solution:** Run `npm install` with `--unsafe-perm` flag or use a non-root user.
+
 ---
 
 ## **5️⃣ Install Project Dependencies**
-After cloning the project, install required dependencies:
+Run the following command to install required dependencies:
 ```bash
 npm install
 ```
 
+### 🚨 Troubleshooting
+**Issue:** "npm command not found"
+- **Solution:** Ensure Node.js is installed correctly using `node -v` and `npm -v`.
+
+**Issue:** "Error: Cannot find module 'express'"
+- **Solution:** Run `npm install` again to ensure dependencies are installed.
+
 ---
 
 ## **6️⃣ Set Up MySQL Database**
-Navigate to the **database folder** and ensure the database name is `theepicbooks` in all schema files:
-```bash
-cd db
-```
-
-Login to MySQL:
-```bash
-mysql -h localhost -u root -p
-```
-
 Create the database:
 ```sql
 CREATE DATABASE theepicbooks;
@@ -90,101 +114,71 @@ mysql -u root -p < db/author_seed.sql
 mysql -u root -p < db/books_seed.sql
 ```
 
-Verify that the tables are created by running:
-```sql
-SHOW TABLES IN theepicbooks;
-```
+### 🚨 Troubleshooting
+**Issue:** "ERROR 1049 (42000): Unknown database 'theepicbooks'"
+- **Solution:** Ensure the database is created using `CREATE DATABASE theepicbooks;`
+
+**Issue:** "ERROR 1064 (42000): You have an error in your SQL syntax"
+- **Solution:** Verify SQL syntax and check for missing semicolons (`;`).
 
 ---
 
 ## **7️⃣ Configure Database Connection in Node.js**
-Update the **config.json** file with the correct MySQL credentials, ensuring that the root password matches the one used during installation.
-
-Once updated, restart the Node.js application:
+Update **config.json** with correct MySQL credentials, then restart the application:
 ```bash
 node server.js
 ```
 
-Ensure the application is running and listening on port **8080**.
+### 🚨 Troubleshooting
+**Issue:** "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'localhost'"
+- **Solution:** Update `config.json` with the correct MySQL username and password.
+
+**Issue:** "Error: connect ECONNREFUSED 127.0.0.1:3306"
+- **Solution:** Ensure MySQL is running with `sudo service mysqld status`.
+
+**Issue:** "Application crashes on startup"
+- **Solution:** Run `node server.js` with `DEBUG=* node server.js` to get detailed logs.
 
 ---
 
-## **8️⃣ Access the Application**
-Test if the application is running:
-```bash
-curl http://localhost:8080
-```
-Or, open a browser and visit:
-```
-http://localhost:8080
-```
-
----
-
-## **9️⃣ Set Up Nginx as a Reverse Proxy**
-
-### **Install Nginx**
-```bash
-sudo yum update -y
-sudo amazon-linux-extras install nginx1.12
-sudo systemctl start nginx
-sudo systemctl enable nginx
-sudo systemctl status nginx
-```
-
-### **Configure Nginx**
-Open the Nginx configuration file:
+## **8️⃣ Set Up Nginx as a Reverse Proxy**
+Edit the Nginx configuration:
 ```bash
 sudo vi /etc/nginx/conf.d/theepicbooks.conf
 ```
 
-Add the following configuration:
-```nginx
-server {
-    listen 80;
-    server_name theepicbooks.com; # Replace with your domain
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-Save and exit the file.
-
-### **Test and Restart Nginx**
+Restart Nginx:
 ```bash
-sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-Allow HTTP/HTTPS traffic in firewall (if applicable):
-```bash
-sudo ufw allow 'Nginx Full'
-```
+### 🚨 Troubleshooting
+**Issue:** "nginx: [emerg] bind() to [::]:80 failed"
+- **Solution:** Ensure no other process is using port 80 (`sudo netstat -tulnp | grep 80`).
+
+**Issue:** "502 Bad Gateway"
+- **Solution:** Ensure the Node.js application is running (`node server.js`).
+
+**Issue:** "403 Forbidden when accessing the site"
+- **Solution:** Verify file and directory permissions in `/var/www/html`.
 
 ---
 
 ## **🔟 Verify the Setup**
-Now, visit your server’s **public IP** or **domain name** in a browser:
+Check if the application is running:
+```bash
+curl http://localhost:8080
 ```
-http://your-server-ip
-```
-If everything is set up correctly, you should see **The EpicBook!** application running via **Nginx**.
+
+If everything is set up correctly, you should see **The EpicBook!** application running.
 
 ---
 
 ## **🎯 Conclusion**
-Following these steps, you have successfully installed and configured **The EpicBook!** application on **Amazon Linux 2** or your local machine.
 
-### **📌 Next Steps**
-- Secure MySQL and Nginx with SSL certificates.
-- Deploy the application in a cloud environment.
-- Optimize database queries for performance improvements.
+Following these steps, you have successfully installed, configured, and troubleshot common issues for **The EpicBook!** application.
+
+## Note: Incase you find any other issues, then let me know or raised the pull request to update this document.  
 
 🚀 Happy Deploying!
 
