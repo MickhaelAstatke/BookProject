@@ -13,3 +13,5 @@ This application, called **The EpicBook**, is an online bookstore that allows us
 
 ### Home Page Overview:
 The home page displays a gallery of books with options to Add to **Cart**. The layout is designed to be intuitive, with clear navigation and aesthetic visuals.
+
+![Screenshot 2025-02-06 at 08 04 51](https://github.com/user-attachments/assets/acb108a2-37b5-406d-8294-76938d9f1a3a)
