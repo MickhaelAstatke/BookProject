@@ -14,7 +14,9 @@ This application, called **The EpicBook**, is an online bookstore that allows us
 ### Home Page Overview:
 The home page displays a gallery of books with options to Add to **Cart**. The layout is designed to be intuitive, with clear navigation and aesthetic visuals.
 
-![Screenshot 2025-02-06 at 08 04 51](https://github.com/user-attachments/assets/acb108a2-37b5-406d-8294-76938d9f1a3a)
+![Screenshot 2025-02-06 at 08 15 06](https://github.com/user-attachments/assets/78feaeb5-d356-4f53-a1c6-76c153d71c2b)
+
+![Screenshot 2025-02-06 at 08 15 26](https://github.com/user-attachments/assets/15910ea2-e578-4def-9185-8f9bcacffc7c)
 
 I see you've uploaded a screenshot of the **menu** section of your application. Based on this, I'll add a section in the documentation explaining the menu functionality.
 
