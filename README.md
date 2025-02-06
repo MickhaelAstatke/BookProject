@@ -71,4 +71,24 @@ The **Product Details** page provides users with a detailed view of a selected b
 
 ---
 
+The **Add to Cart** feature is a critical part of the application, allowing users to select books for purchase. Based on the uploaded screenshot, I’ll document this feature in the overview.
+
+---
+
+## Add to Cart Feature
+The **Add to Cart** functionality enables users to select books they are interested in purchasing and store them in a virtual cart for checkout.
+
+### Features of Add to Cart**
+1. **Clickable "Add to Cart" Button:** Each book has a red "Add to Cart" button for easy selection.
+2. **Real-Time Cart Updates:** Once a user clicks the button, the cart updates instantly.
+3. **Cart Icon with Item Count:** The shopping cart icon in the navigation bar reflects the number of books added.
+4. **Persistent Cart State:** The selected books remain in the cart until removed manually or the session ends.
+5. **Visual Feedback:** The cart icon updates, ensuring users know their selected items have been added.
+
+![Screenshot 2025-02-06 at 08 22 42](https://github.com/user-attachments/assets/ba51c3e9-e154-42d2-837b-e4ff9c968526)
+
+---
+
+
+
 
