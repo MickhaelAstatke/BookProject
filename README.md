@@ -7,12 +7,19 @@ The **EpicBook!** project is an online bookstore application that allows users t
 ## Documentation Structure
 
 1️⃣ Home Page
+
 2️⃣ Menu Navigation
+
 3️⃣ Gallery Section
+
 4️⃣ Product Details
+
 5️⃣ Add to Cart
+
 6️⃣ Cart & Order Summary
+
 7️⃣ Checkout & Order Confirmation
+
 
 ---
 
