@@ -146,6 +146,17 @@ The **Checkout Process** finalizes the purchase and confirms the order placement
 
 ![Screenshot 2025-02-06 at 08 25 23](https://github.com/user-attachments/assets/751de6c6-213f-4fa5-87c2-e8d1d3f34829)
 
+## System Architecture
+
+### 🛠️ Key Components
+
+- ** Frontend**: HTML, CSS, JavaScript for UI rendering
+- ** Backend**: Node.js + Express.js handles API requests
+- ** Database**: MySQL for storing books, orders, and user data
+- ** Reverse Proxy**: Nginx to handle request forwarding
+
+** Cloud Services (Future)**:  AWS EC2, RDS, S3, CloudFront, Lambda
+
 ---
 
 ## 🎯 **Conclusion**
