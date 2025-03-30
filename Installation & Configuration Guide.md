@@ -154,7 +154,7 @@ npm install
 ## **6️⃣ Set Up MySQL Database**
 Create the database:
 ```sql
-CREATE DATABASE theepicbooks;
+CREATE DATABASE bookstore;
 ```
 
 Run the database scripts:
