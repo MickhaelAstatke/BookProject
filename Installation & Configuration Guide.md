@@ -1,6 +1,6 @@
 # The EpicBook! - Installation, Configuration & Troubleshooting Guide
 
-## 📌 Introduction
+## Introduction
 This document provides step-by-step instructions on how to install, configure, and troubleshoot **The EpicBook!** application on **Amazon Linux 2** or a local machine.
 
 ---
@@ -40,12 +40,28 @@ cd theepicbook
 ## **3️⃣ Install MySQL Server 5.7**
 Run the following commands to install and start **MySQL Server 5.7**:
 ```bash
-sudo yum update
+# 1. Update the system
+sudo yum update -y
+
+# 2. Add the MySQL Yum repository for MySQL 5.7
+sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+
+# 3. Import the GPG key (usually auto-imported with the .rpm, but good to be explicit)
 sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-sudo sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/mysql-community.repo
-sudo yum --enablerepo=mysql57-community install mysql-community-server
-sudo service mysqld start
-sudo service mysqld status
+
+# 4. Disable all MySQL repo versions except 5.7
+sudo yum-config-manager --disable mysql80-community
+sudo yum-config-manager --enable mysql57-community
+
+# 5. Install MySQL Server 5.7
+sudo yum install -y mysql-community-server
+
+# 6. Start MySQL service
+sudo systemctl start mysqld
+
+# 7. Check MySQL service status
+sudo systemctl status mysqld
+
 ```
 
 Retrieve the temporary MySQL root password:
