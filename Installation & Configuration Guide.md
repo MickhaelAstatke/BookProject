@@ -64,10 +64,44 @@ sudo systemctl status mysqld
 
 ```
 
-Retrieve the temporary MySQL root password:
-```bash
-grep 'temporary password' /var/log/mysqld.log
-```
+That error is normal right after installing MySQL. It means MySQL has set a **temporary root password**, and you **must change it** before doing anything else.
+
+---
+
+### Get Password & Test Mysql Access:
+
+1. **Get the temporary password**:
+   ```bash
+   sudo grep 'temporary password' /var/log/mysqld.log
+   ```
+
+   You'll see something like:
+   ```
+   [Note] A temporary password is generated for root@localhost: Abc!1234efgh
+   ```
+
+2. **Log in to MySQL using that temporary password**:
+   ```bash
+   mysql -u root -p
+   ```
+   Enter the temporary password when prompted.
+
+3. **Change the root password**:
+   Once inside the MySQL prompt, run:
+   ```sql
+   ALTER USER 'root'@'localhost' IDENTIFIED BY 'NewStrongPassword123!';
+   ```
+
+   - Make sure the new password meets MySQL’s password policy: at least 8 characters, includes uppercase, lowercase, numbers, and special characters.
+
+4. **Now you can use MySQL as normal**:
+   ```sql
+   SHOW DATABASES;
+   ```
+
+---
+
+Let me know if you're not able to log in or if the password policy is too strict—you can adjust it if needed.
 
 ### 🚨 Troubleshooting
 **Issue:** "mysql: command not found"
