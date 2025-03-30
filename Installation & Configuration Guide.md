@@ -5,7 +5,7 @@ This document provides step-by-step instructions on how to install, configure, a
 
 ---
 
-## **1️⃣ Prerequisites**
+## **Prerequisites**
 Before installing the application, ensure you have the following dependencies:
 - **Amazon Linux 2** or **Local Machine** (with Linux/macOS support)
 - **MySQL Server 5.7**
@@ -15,7 +15,7 @@ Before installing the application, ensure you have the following dependencies:
 
 ---
 
-## **2️⃣ Clone the Application Repository**
+## **Clone the Application Repository**
 Run the following commands to install **Git** and clone the project repository:
 
 ```bash
@@ -28,7 +28,7 @@ Move into the project directory:
 cd theepicbook
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "git command not found"
 - **Solution:** Install Git using `sudo yum install git -y`
 
@@ -37,7 +37,7 @@ cd theepicbook
 
 ---
 
-## **3️⃣ Install MySQL Server 5.7**
+## **Install MySQL Server 5.7**
 Run the following commands to install and start **MySQL Server 5.7**:
 ```bash
 # 1. Update the system
@@ -101,9 +101,7 @@ That error is normal right after installing MySQL. It means MySQL has set a **te
 
 ---
 
-Let me know if you're not able to log in or if the password policy is too strict—you can adjust it if needed.
-
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "mysql: command not found"
 - **Solution:** Verify MySQL installation with `mysql --version`. If missing, reinstall using the above steps.
 
@@ -115,7 +113,7 @@ Let me know if you're not able to log in or if the password policy is too strict
 
 ---
 
-## **4️⃣ Install Node.js & npm**
+## **Install Node.js & npm**
 To install Node.js and npm using **NVM**:
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
@@ -124,7 +122,7 @@ nvm install v17
 node -v
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "node: command not found"
 - **Solution:** Ensure `nvm` is properly sourced using `source ~/.nvm/nvm.sh`
 
@@ -136,13 +134,13 @@ node -v
 
 ---
 
-## **5️⃣ Install Project Dependencies**
+## **Install Project Dependencies**
 Run the following command to install required dependencies:
 ```bash
 npm install
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "npm command not found"
 - **Solution:** Ensure Node.js is installed correctly using `node -v` and `npm -v`.
 
@@ -151,7 +149,7 @@ npm install
 
 ---
 
-## **6️⃣ Set Up MySQL Database**
+## **Set Up MySQL Database**
 Create the database:
 ```sql
 CREATE DATABASE bookstore;
@@ -164,7 +162,7 @@ mysql -u root -p < db/author_seed.sql
 mysql -u root -p < db/books_seed.sql
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "ERROR 1049 (42000): Unknown database 'theepicbooks'"
 - **Solution:** Ensure the database is created using `CREATE DATABASE theepicbooks;`
 
@@ -173,13 +171,13 @@ mysql -u root -p < db/books_seed.sql
 
 ---
 
-## **7️⃣ Configure Database Connection in Node.js**
+## **Configure Database Connection in Node.js**
 Update **config.json** with correct MySQL credentials, then restart the application:
 ```bash
 node server.js
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'localhost'"
 - **Solution:** Update `config.json` with the correct MySQL username and password.
 
@@ -191,18 +189,55 @@ node server.js
 
 ---
 
-## **8️⃣ Set Up Nginx as a Reverse Proxy**
-Edit the Nginx configuration:
+### Set Up Nginx as a Reverse Proxy (CentOS)
+
+#### Step 1: Install Nginx
+```bash
+sudo yum install -y epel-release
+sudo yum install -y nginx
+```
+
+#### Step 2: Start and Enable Nginx
+```bash
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo systemctl status nginx
+```
+
+#### Step 3: Configure Nginx as a Reverse Proxy
+Edit the Nginx configuration file (replace with your actual domain or IP):
+
 ```bash
 sudo vi /etc/nginx/conf.d/theepicbooks.conf
 ```
 
-Restart Nginx:
+Paste the following configuration (modify as needed):
+
+```nginx
+server {
+    listen 80;
+    server_name your_domain_or_IP;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Make sure your Node.js app is running on port `8080`.
+
+#### Step 4: Restart Nginx
 ```bash
+sudo nginx -t    # Check for syntax errors
 sudo systemctl restart nginx
 ```
 
-### 🚨 Troubleshooting
+### Troubleshooting
 **Issue:** "nginx: [emerg] bind() to [::]:80 failed"
 - **Solution:** Ensure no other process is using port 80 (`sudo netstat -tulnp | grep 80`).
 
@@ -214,21 +249,21 @@ sudo systemctl restart nginx
 
 ---
 
-## **🔟 Verify the Setup**
+## **Verify the Setup**
 Check if the application is running:
 ```bash
-curl http://localhost:8080
+http://<PublicIP>
 ```
 
 If everything is set up correctly, you should see **The EpicBook!** application running.
 
 ---
 
-## **🎯 Conclusion**
+## **Conclusion**
 
 Following these steps, you have successfully installed, configured, and troubleshot common issues for **The EpicBook!** application.
 
 ## Note: Incase you find any other issues, then let me know or raised the pull request to update this document.  
 
-🚀 Happy Deploying!
+Happy Deploying!
 
