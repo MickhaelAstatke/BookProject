@@ -50,6 +50,7 @@ module.exports = function (sequelize, DataTypes) {
       },
     });
     Book.belongsToMany(models.Cart, { through: "Cartbook" });
+    Book.hasMany(models.ReadingProgress, { as: "readingProgress", foreignKey: "BookId" });
   };
 
   return Book;

@@ -1,0 +1,133 @@
+<div id="account-root" class="container" style="margin-top: 40px;">
+  <div class="section">
+    <h4>Guardian Account</h4>
+    <p class="grey-text">Manage your plan, billing details, and child profiles.</p>
+  </div>
+
+  <div class="row">
+    <div class="col s12 l6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Plan details</span>
+          <p><strong>Current plan:</strong> <span id="account-plan">{{#if subscription}}{{subscription.planName}}{{else}}{{user.subscriptionPlan}}{{/if}}</span></p>
+          <p><strong>Status:</strong> <span id="account-status">{{#if subscription}}{{subscription.status}}{{else}}{{user.subscriptionStatus}}{{/if}}</span></p>
+          <p><strong>Renews on:</strong> <span id="account-renewal">{{#if subscription}}{{#if subscription.renewalDate}}{{subscription.renewalDate}}{{else}}—{{/if}}{{else}}{{#if user.subscriptionRenewalDate}}{{user.subscriptionRenewalDate}}{{else}}—{{/if}}{{/if}}</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 l6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Billing details</span>
+          <form id="billing-form">
+            <div class="input-field">
+              <input id="guardian-name" type="text" name="guardianName" value="{{user.guardianName}}" />
+              <label for="guardian-name" class="active">Guardian name</label>
+            </div>
+            <div class="input-field">
+              <input id="billing-email" type="email" name="billingEmail" value="{{user.billingEmail}}" />
+              <label for="billing-email" class="active">Billing email</label>
+            </div>
+            <div class="input-field">
+              <input id="billing-phone" type="text" name="billingPhone" value="{{user.billingPhone}}" />
+              <label for="billing-phone" class="active">Billing phone</label>
+            </div>
+            <div class="input-field">
+              <input id="subscription-plan" type="text" name="subscriptionPlan" value="{{#if subscription}}{{subscription.planName}}{{else}}{{user.subscriptionPlan}}{{/if}}" />
+              <label for="subscription-plan" class="active">Subscription plan</label>
+            </div>
+            <div class="input-field">
+              <input id="subscription-status" type="text" name="subscriptionStatus" value="{{#if subscription}}{{subscription.status}}{{else}}{{user.subscriptionStatus}}{{/if}}" />
+              <label for="subscription-status" class="active">Subscription status</label>
+            </div>
+            <div class="input-field">
+              <input id="subscription-renewal-date" type="date" name="subscriptionRenewalDate" value="" />
+              <label for="subscription-renewal-date" class="active">Renewal date</label>
+            </div>
+            <div class="input-field">
+              <input id="payment-method" type="text" name="paymentMethod" />
+              <label for="payment-method">Payment method</label>
+            </div>
+            <div class="input-field">
+              <input id="billing-reference" type="text" name="billingReference" />
+              <label for="billing-reference">Billing reference</label>
+            </div>
+            <button class="btn blue-grey" type="submit">Save billing</button>
+            <span id="billing-feedback" class="helper-text"></span>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 l6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Child profiles</span>
+          <ul id="child-profile-list" class="collection"></ul>
+          <form id="child-profile-form">
+            <div class="input-field">
+              <input id="child-first-name" type="text" required />
+              <label for="child-first-name">First name</label>
+            </div>
+            <div class="input-field">
+              <input id="child-last-name" type="text" />
+              <label for="child-last-name">Last name</label>
+            </div>
+            <div class="input-field">
+              <input id="child-birthdate" type="date" />
+              <label for="child-birthdate" class="active">Birthdate</label>
+            </div>
+            <div class="input-field">
+              <input id="child-reading-level" type="text" />
+              <label for="child-reading-level">Reading level</label>
+            </div>
+            <div class="input-field">
+              <textarea id="child-interests" class="materialize-textarea"></textarea>
+              <label for="child-interests">Interests</label>
+            </div>
+            <button class="btn blue-grey" type="submit">Add child</button>
+            <span id="child-feedback" class="helper-text"></span>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 l6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Reading progress</span>
+          <table class="highlight responsive-table">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Child</th>
+                <th>Progress</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody id="reading-progress-table"></tbody>
+          </table>
+          <form id="reading-progress-form">
+            <div class="input-field">
+              <input id="progress-book-id" type="number" min="1" required />
+              <label for="progress-book-id">Book ID</label>
+            </div>
+            <div class="input-field">
+              <input id="progress-child-id" type="number" min="1" />
+              <label for="progress-child-id">Child profile ID</label>
+            </div>
+            <div class="input-field">
+              <input id="progress-percent" type="number" min="0" max="100" />
+              <label for="progress-percent">Progress (%)</label>
+            </div>
+            <button class="btn blue-grey" type="submit">Save progress</button>
+            <span id="progress-feedback" class="helper-text"></span>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/account.js"></script>
