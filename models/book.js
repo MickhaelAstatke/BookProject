@@ -60,12 +60,8 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
     });
-    if (models.PlanBookAccess && models.Plan) {
-      Book.belongsToMany(models.Plan, {
-        through: models.PlanBookAccess,
-        as: "plans",
-      });
-    }
+    Book.belongsToMany(models.Cart, { through: "Cartbook" });
+    Book.hasMany(models.ReadingProgress, { as: "readingProgress", foreignKey: "BookId" });
   };
 
   return Book;
