@@ -2,139 +2,193 @@
 
 const express = require("express");
 const router = express.Router();
-const db = require("../models");
+const accounting = require("accounting");
+const lodash = require("lodash");
 
-function serializePlan(planInstance) {
-  const plan = planInstance.get({ plain: true });
-  plan.displayPrice = (plan.priceCents / 100).toFixed(2);
-  plan.featuredBooks = (plan.availableBooks || []).map((book) => ({
-    ...book,
-    authorName: book.Author
-      ? `${book.Author.firstName} ${book.Author.lastName}`
-      : null,
-  }));
-  return plan;
+const db = require("../models");
+const { requireAuthPage } = require("../middleware/auth");
+
+async function getDistinctCategories() {
+  return db.Book.aggregate("genre", "DISTINCT", { plain: false });
 }
 
-router.get("/", async (_req, res, next) => {
+async function getCartMeta(userId) {
+  if (!userId) {
+    return { cartCount: 0, totalPrice: 0 };
+  }
+
+  const [cartCount, totalPrice] = await Promise.all([
+    db.Cart.count({ where: { UserId: userId } }),
+    db.Cart.sum("price", { where: { UserId: userId } }),
+  ]);
+
+  return {
+    cartCount: cartCount || 0,
+    totalPrice: Number(totalPrice || 0),
+  };
+}
+
+router.get("/", async (req, res) => {
   try {
-    const planInstances = await db.Plan.findAll({
-      include: [
-        {
-          model: db.Benefit,
-          as: "benefits",
-          through: { attributes: [] },
-        },
-        {
-          model: db.Book,
-          as: "availableBooks",
-          through: { attributes: ["accessType"] },
-          include: [db.Author],
-          where: { isFeatured: true },
-          required: false,
-        },
-      ],
-      order: [["priceCents", "ASC"]],
-    });
-
-    const featuredBooks = await db.Book.findAll({
-      where: { isFeatured: true },
-      include: [db.Author],
-      limit: 6,
-    });
-
-    res.render("plan-selection", {
-      plans: planInstances.map(serializePlan),
-      featuredBooks: featuredBooks.map((bookInstance) => {
-        const book = bookInstance.get({ plain: true });
-        return {
-          ...book,
-          authorName: `${book.Author.firstName} ${book.Author.lastName}`,
-        };
+    const [books, categories, cartMeta] = await Promise.all([
+      db.Book.findAll({
+        limit: 9,
+        include: [db.Author],
       }),
+      getDistinctCategories(),
+      getCartMeta(req.user ? req.user.id : null),
+    ]);
+
+    const formattedBooks = lodash.map(books, (book) => {
+      const dataValues = book.get({ plain: true });
+      dataValues.price = accounting.formatMoney(dataValues.price);
+      dataValues.modalhref = `#modal-book-${dataValues.id}`;
+      dataValues.modalId = `modal-book-${dataValues.id}`;
+      return dataValues;
+    });
+
+    return res.render("index", {
+      books: formattedBooks,
+      categories,
+      cartCount: cartMeta.cartCount,
     });
   } catch (error) {
-    next(error);
+    console.error("Failed to render index", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the catalog. Please try again later.",
+      categories: [],
+      cartCount: 0,
+    });
   }
 });
 
-router.get("/onboarding", async (_req, res, next) => {
+router.post("/category/:categoryName", requireAuthPage, async (req, res) => {
   try {
-    const plans = await db.Plan.findAll({
-      where: { trialDays: { [db.Sequelize.Op.gt]: 0 } },
-      include: [{ model: db.Benefit, as: "benefits", through: { attributes: [] } }],
-      order: [["trialDays", "DESC"]],
+    const [booksByCategory, categories, cartMeta] = await Promise.all([
+      db.Book.findAll({
+        where: { genre: req.body.genre },
+        include: [db.Author],
+      }),
+      getDistinctCategories(),
+      getCartMeta(req.user.id),
+    ]);
+
+    const formattedBooks = lodash.map(booksByCategory, (book) => {
+      const dataValues = book.get({ plain: true });
+      dataValues.price = accounting.formatMoney(dataValues.price);
+      dataValues.modalhref = `#modal-book-${dataValues.id}`;
+      dataValues.modalId = `modal-book-${dataValues.id}`;
+      return dataValues;
     });
 
-    res.render("onboarding", {
-      trialPlans: plans.map(serializePlan),
+    return res.render("category", {
+      books: formattedBooks,
+      categories,
+      cartCount: cartMeta.cartCount,
     });
   } catch (error) {
-    next(error);
+    console.error("Failed to render category page", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the selected category.",
+      categories: [],
+      cartCount: 0,
+    });
   }
 });
 
-router.get("/account", async (req, res, next) => {
+router.get("/cart", requireAuthPage, async (req, res) => {
   try {
-    const { subscriptionId } = req.query;
-    let subscription = null;
-
-    if (subscriptionId) {
-      const subscriptionInstance = await db.Subscription.findByPk(subscriptionId, {
+    const [cartItems, categories, cartMeta] = await Promise.all([
+      db.Cart.findAll({
+        where: { UserId: req.user.id },
         include: [
-          { model: db.Plan, as: "plan", include: [{ model: db.Benefit, as: "benefits", through: { attributes: [] } }] },
+          {
+            model: db.Book,
+          },
+          {
+            model: db.ChildProfile,
+            as: "childProfile",
+          },
         ],
-      });
-      if (subscriptionInstance) {
-        subscription = subscriptionInstance.get({ plain: true });
-        if (subscriptionInstance.plan) {
-          subscription.plan = serializePlan(subscriptionInstance.plan);
-        }
-        if (subscription.renewsOn) {
-          subscription.renewsOnFormatted = new Date(subscription.renewsOn).toDateString();
-        }
-        if (subscription.trialEndsAt) {
-          subscription.trialEndsAtFormatted = new Date(subscription.trialEndsAt).toDateString();
-        }
-      }
-    }
-
-    const plans = await db.Plan.findAll({ order: [["priceCents", "ASC"]] });
-
-    res.render("account", {
-      subscription,
-      plans: plans.map(serializePlan),
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get("/collections/:tag", async (req, res, next) => {
-  try {
-    const tag = req.params.tag;
-    const books = await db.Book.findAll({
-      where: { collectionTag: tag },
-      include: [db.Author, { model: db.Plan, as: "plans", through: { attributes: ["accessType"] } }],
-    });
-
-    res.render("collection", {
-      tag,
-      books: books.map((bookInstance) => {
-        const book = bookInstance.get({ plain: true });
-        return {
-          ...book,
-          authorName: `${book.Author.firstName} ${book.Author.lastName}`,
-        };
       }),
+      getDistinctCategories(),
+      getCartMeta(req.user.id),
+    ]);
+
+    const cart = cartItems.map((item) => {
+      const plain = item.get({ plain: true });
+      plain.priceDisplay = accounting.formatMoney(plain.price);
+      plain.books = plain.Books.map((book) => {
+        const bookPlain = { ...book };
+        bookPlain.priceDisplay = accounting.formatMoney(bookPlain.price);
+        return bookPlain;
+      });
+      delete plain.Books;
+      return plain;
+    });
+
+    return res.render("cart", {
+      cart,
+      categories,
+      cartCount: cartMeta.cartCount,
+      subTotal: accounting.formatMoney(cartMeta.totalPrice),
     });
   } catch (error) {
-    next(error);
+    console.error("Failed to render cart", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load your cart.",
+      categories: [],
+      cartCount: 0,
+    });
   }
 });
 
-router.get("/gallery", (_req, res) => {
-  res.render("gallery");
+router.get("/gallery", requireAuthPage, async (req, res) => {
+  try {
+    const [categories, cartMeta] = await Promise.all([
+      getDistinctCategories(),
+      getCartMeta(req.user.id),
+    ]);
+
+    return res.render("gallery", {
+      categories,
+      cartCount: cartMeta.cartCount,
+    });
+  } catch (error) {
+    console.error("Failed to render gallery", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the gallery.",
+      categories: [],
+      cartCount: 0,
+    });
+  }
+});
+
+router.get("/account", requireAuthPage, async (req, res) => {
+  try {
+    const [categories, cartMeta, subscription] = await Promise.all([
+      getDistinctCategories(),
+      getCartMeta(req.user.id),
+      db.Subscription.findOne({
+        where: { UserId: req.user.id },
+        order: [["updatedAt", "DESC"]],
+      }),
+    ]);
+
+    return res.render("account", {
+      categories,
+      cartCount: cartMeta.cartCount,
+      subscription: subscription ? subscription.get({ plain: true }) : null,
+      user: req.user.toSafeJSON ? req.user.toSafeJSON() : req.user.get({ plain: true }),
+    });
+  } catch (error) {
+    console.error("Failed to render account page", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load your account settings.",
+      categories: [],
+      cartCount: 0,
+    });
+  }
 });
 
 module.exports = router;

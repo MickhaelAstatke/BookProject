@@ -1,180 +1,136 @@
 "use strict";
 
+const express = require("express");
+const router = express.Router();
+
 const db = require("../models");
+const { requireAuthApi } = require("../middleware/auth");
 
-function addDays(baseDate, amount) {
-  const date = new Date(baseDate.getTime());
-  date.setDate(date.getDate() + amount);
-  return date;
-}
+router.use(requireAuthApi);
 
-function calculateRenewalDate(plan) {
-  const now = new Date();
-  if (!plan) {
-    return null;
-  }
-  if (plan.billingInterval === "yearly") {
-    const renewal = new Date(now.getTime());
-    renewal.setFullYear(renewal.getFullYear() + 1);
-    return renewal;
-  }
-  // default monthly
-  const renewal = new Date(now.getTime());
-  renewal.setMonth(renewal.getMonth() + 1);
-  return renewal;
-}
-
-function subscriptionIsActive(subscription) {
-  if (!subscription) {
-    return false;
-  }
-  if (subscription.status === "canceled" || subscription.status === "expired") {
-    return false;
-  }
-
-  if (subscription.status === "trialing" && subscription.trialEndsAt) {
-    return new Date(subscription.trialEndsAt) >= new Date();
-  }
-
-  if (subscription.status === "active") {
-    if (subscription.renewsOn) {
-      return new Date(subscription.renewsOn) >= new Date();
+router.post("/", async (req, res) => {
+  try {
+    const { bookId, quantity, childProfileId } = req.body;
+    if (!bookId) {
+      return res.status(400).json({ error: "A bookId is required" });
     }
-    return true;
-  }
 
-  return false;
-}
+    const numericBookId = Number(bookId);
+    if (!Number.isFinite(numericBookId) || numericBookId <= 0) {
+      return res.status(400).json({ error: "bookId must be a number" });
+    }
 
-module.exports = function (app) {
-  app.get("/api/plans", async function (_req, res) {
-    const plans = await db.Plan.findAll({
+    const book = await db.Book.findByPk(numericBookId);
+    if (!book) {
+      return res.status(404).json({ error: "Unable to locate requested book" });
+    }
+
+    const parsedChildProfileId = childProfileId !== undefined && childProfileId !== null && childProfileId !== ""
+      ? Number(childProfileId)
+      : null;
+
+    if (parsedChildProfileId !== null && Number.isNaN(parsedChildProfileId)) {
+      return res.status(400).json({ error: "childProfileId must be a number" });
+    }
+
+    if (parsedChildProfileId !== null) {
+      const childProfile = await db.ChildProfile.findOne({
+        where: { id: parsedChildProfileId, UserId: req.user.id },
+      });
+      if (!childProfile) {
+        return res.status(404).json({ error: "Child profile not found" });
+      }
+    }
+
+    const qty = Number.isFinite(Number(quantity)) && Number(quantity) > 0 ? Number(quantity) : 1;
+    const basePrice = Number(book.price);
+    if (Number.isNaN(basePrice)) {
+      return res.status(500).json({ error: "Book price is not configured" });
+    }
+    const totalPrice = Number((basePrice * qty).toFixed(2));
+    const cartItem = await db.Cart.create({
+      quantity: qty,
+      price: totalPrice,
+      UserId: req.user.id,
+      ChildProfileId: parsedChildProfileId,
+    });
+
+    await cartItem.addBook(book);
+
+    const createdItem = await db.Cart.findByPk(cartItem.id, {
       include: [
-        {
-          model: db.Benefit,
-          as: "benefits",
-          through: { attributes: [] },
-        },
         {
           model: db.Book,
-          as: "availableBooks",
-          through: { attributes: ["accessType"] },
-          include: [db.Author],
+        },
+        {
+          model: db.ChildProfile,
+          as: "childProfile",
         },
       ],
-      order: [["priceCents", "ASC"]],
     });
 
-    res.json(plans);
-  });
+    return res.status(201).json({ cartItem: createdItem.get({ plain: true }) });
+  } catch (error) {
+    console.error("Failed to create cart entry", error);
+    return res.status(500).json({ error: "Unable to add book to cart" });
+  }
+});
 
-  app.post("/api/trials", async function (req, res) {
-    const { planId, userReference } = req.body;
-    const plan = await db.Plan.findByPk(planId);
-
-    if (!plan) {
-      return res.status(404).json({ message: "Plan not found" });
-    }
-
-    const now = new Date();
-    const trialEndsAt = plan.trialDays ? addDays(now, plan.trialDays) : null;
-
-    const subscription = await db.Subscription.create({
-      status: plan.trialDays > 0 ? "trialing" : "active",
-      trialEndsAt,
-      renewsOn: calculateRenewalDate(plan),
-      userReference: userReference || null,
-      PlanId: plan.id,
-    });
-
-    res.status(201).json(subscription);
-  });
-
-  app.post("/api/subscriptions", async function (req, res) {
-    const { planId, userReference } = req.body;
-    const plan = await db.Plan.findByPk(planId);
-
-    if (!plan) {
-      return res.status(404).json({ message: "Plan not found" });
-    }
-
-    const subscription = await db.Subscription.create({
-      status: "active",
-      trialEndsAt: plan.trialDays ? addDays(new Date(), plan.trialDays) : null,
-      renewsOn: calculateRenewalDate(plan),
-      userReference: userReference || null,
-      PlanId: plan.id,
-    });
-
-    res.status(201).json(subscription);
-  });
-
-  app.patch("/api/subscriptions/:id/renew", async function (req, res) {
-    const subscription = await db.Subscription.findByPk(req.params.id, {
-      include: [{ model: db.Plan, as: "plan" }],
-    });
-
-    if (!subscription) {
-      return res.status(404).json({ message: "Subscription not found" });
-    }
-
-    const renewalDate = calculateRenewalDate(subscription.plan);
-    await subscription.update({
-      status: "active",
-      renewsOn: renewalDate,
-      canceledOn: null,
-    });
-
-    res.json(subscription);
-  });
-
-  app.post("/api/subscriptions/:id/cancel", async function (req, res) {
-    const subscription = await db.Subscription.findByPk(req.params.id);
-
-    if (!subscription) {
-      return res.status(404).json({ message: "Subscription not found" });
-    }
-
-    await subscription.update({
-      status: "canceled",
-      canceledOn: new Date(),
-    });
-
-    res.json(subscription);
-  });
-
-  app.get("/api/catalog/premium", async function (req, res) {
-    const { subscriptionId } = req.query;
-    if (!subscriptionId) {
-      return res.status(400).json({ message: "A subscriptionId is required" });
-    }
-
-    const subscription = await db.Subscription.findByPk(subscriptionId, {
+router.get("/", async (req, res) => {
+  try {
+    const items = await db.Cart.findAll({
+      where: { UserId: req.user.id },
+      order: [["createdAt", "DESC"]],
       include: [
         {
-          model: db.Plan,
-          as: "plan",
-          include: [
-            {
-              model: db.Book,
-              as: "availableBooks",
-              through: { attributes: ["accessType"] },
-              where: { isPremium: true },
-              required: false,
-              include: [db.Author],
-            },
-          ],
+          model: db.Book,
+        },
+        {
+          model: db.ChildProfile,
+          as: "childProfile",
         },
       ],
     });
 
-    if (!subscription || !subscriptionIsActive(subscription)) {
-      return res.status(403).json({ message: "Subscription is not active" });
+    const total = await db.Cart.sum("price", {
+      where: { UserId: req.user.id },
+    });
+
+    return res.json({
+      items: items.map((item) => item.get({ plain: true })),
+      total: Number(total || 0),
+    });
+  } catch (error) {
+    console.error("Failed to fetch cart items", error);
+    return res.status(500).json({ error: "Unable to retrieve cart" });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleted = await db.Cart.destroy({
+      where: { id: req.params.id, UserId: req.user.id },
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Cart item not found" });
     }
 
-    res.json({
-      subscription,
-      premiumBooks: subscription.plan ? subscription.plan.availableBooks : [],
-    });
-  });
-};
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Failed to delete cart item", error);
+    return res.status(500).json({ error: "Unable to remove cart item" });
+  }
+});
+
+router.delete("/", async (req, res) => {
+  try {
+    await db.Cart.destroy({ where: { UserId: req.user.id } });
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Failed to clear cart", error);
+    return res.status(500).json({ error: "Unable to clear cart" });
+  }
+});
+
+module.exports = router;
