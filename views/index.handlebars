@@ -1,6 +1,153 @@
-<div class="container">
-  <div class="section white-text">
-    <h4>This page has been superseded by the subscription-first experience.</h4>
-    <p>Visit the plans page to explore membership tiers and curated shelves.</p>
+<section class="intro" data-scroll-animate>
+  <div class="intro__badge">Featured plans</div>
+  <h2 class="intro__title">Choose a membership that unlocks every shelf and keeps curiosity glowing.</h2>
+  <p class="intro__subtitle">
+    Browse this week's highlighted adventures, then invite your readers to collect badges, celebrate streaks, and grow
+    their reading confidence.
+  </p>
+</section>
+
+<section class="carousel-section" data-carousel data-scroll-animate>
+  <header class="carousel-section__header">
+    <h3>Adventure carousel</h3>
+    <div class="carousel-controls">
+      <button class="carousel-control" type="button" data-carousel-prev aria-label="Scroll to previous shelf">
+        <span class="fa fa-arrow-left"></span>
+      </button>
+      <button class="carousel-control" type="button" data-carousel-next aria-label="Scroll to next shelf">
+        <span class="fa fa-arrow-right"></span>
+      </button>
+    </div>
+  </header>
+  <div class="carousel-track" data-carousel-track>
+    {{#each books}}
+      <article class="story-card" aria-label="{{title}} shelf card">
+        <div class="story-card__badge reading-badge reading-badge--{{readingLevel}}">{{readingLevel}}</div>
+        <h4 class="story-card__title">{{title}}</h4>
+        {{#if Author}}
+          <p class="story-card__author">by {{Author.name}}</p>
+        {{/if}}
+        <p class="story-card__description">{{bookDescription}}</p>
+        <div class="story-card__meta">
+          <span class="story-card__genre">{{genre}}</span>
+          {{#if collectionTag}}
+            <span class="story-card__collection">{{collectionTag}}</span>
+          {{/if}}
+        </div>
+        <div class="story-card__footer">
+          {{#if isPremium}}
+            <span class="story-card__pill story-card__pill--premium">Premium Quest</span>
+          {{else}}
+            <span class="story-card__pill">Included in Explorer plan</span>
+          {{/if}}
+          <button class="btn btn--ghost" type="button" onclick="window.openAuthModal && window.openAuthModal();">
+            Unlock &amp; read
+          </button>
+        </div>
+      </article>
+    {{/each}}
   </div>
-</div>
+</section>
+
+<section class="micro-badges" data-scroll-animate>
+  <h3 class="section-title">Badges to celebrate every milestone</h3>
+  <div class="micro-badges__grid">
+    <div class="micro-badge">
+      <div class="micro-badge__icon micro-badge__icon--meteor"></div>
+      <span>Lightning Reader</span>
+    </div>
+    <div class="micro-badge">
+      <div class="micro-badge__icon micro-badge__icon--ocean"></div>
+      <span>Deep Diver</span>
+    </div>
+    <div class="micro-badge">
+      <div class="micro-badge__icon micro-badge__icon--robot"></div>
+      <span>STEM Star</span>
+    </div>
+    <div class="micro-badge">
+      <div class="micro-badge__icon micro-badge__icon--artist"></div>
+      <span>Creative Spark</span>
+    </div>
+  </div>
+</section>
+
+<section class="plan-comparison" id="plans" data-scroll-animate>
+  <h3 class="section-title">Plans built for every family</h3>
+  <div class="plan-comparison__grid">
+    <article class="plan-card plan-card--highlight">
+      <div class="plan-card__header">
+        <span class="plan-card__tag">Best value</span>
+        <h4>Annual Explorer</h4>
+        <p>Unlock all premium shelves for the price of ten months.</p>
+      </div>
+      <div class="plan-card__price">
+        <span class="plan-card__amount">$119</span>
+        <span class="plan-card__detail">per year • 30-day free trial</span>
+      </div>
+      <ul class="plan-card__benefits">
+        <li>Unlimited badges &amp; guided quests</li>
+        <li>4 child profiles + 1 grown-up dashboard</li>
+        <li>Offline reading packs &amp; printable missions</li>
+      </ul>
+      <button class="btn btn--primary" type="button">Start free trial</button>
+      <p class="plan-card__trust"><span class="fa fa-shield-alt"></span> Cancel anytime</p>
+    </article>
+    <article class="plan-card">
+      <div class="plan-card__header">
+        <h4>Monthly Adventurer</h4>
+        <p>Flexible access with the same library of immersive stories.</p>
+      </div>
+      <div class="plan-card__price">
+        <span class="plan-card__amount">$12.99</span>
+        <span class="plan-card__detail">per month • 7-day free trial</span>
+      </div>
+      <ul class="plan-card__benefits">
+        <li>Personalized weekly shelf refresh</li>
+        <li>Reading streak celebrations &amp; rewards</li>
+        <li>Invite grandparents to cheer on progress</li>
+      </ul>
+      <button class="btn btn--secondary" type="button">Start monthly trial</button>
+      <p class="plan-card__trust"><span class="fa fa-heart"></span> 98% of families renew</p>
+    </article>
+  </div>
+</section>
+
+<section class="family-signup" id="family-signup" data-scroll-animate>
+  <div class="family-signup__content">
+    <div class="family-signup__avatars">
+      <div class="avatar avatar--sunny" aria-hidden="true"></div>
+      <div class="avatar avatar--mint" aria-hidden="true"></div>
+      <div class="avatar avatar--berry" aria-hidden="true"></div>
+    </div>
+    <div class="family-signup__copy">
+      <h3>Invite your readers &amp; start earning badges together.</h3>
+      <p>
+        Create a family hub, assign shelves by reading level, and cheer each other on with shared milestones. We’ll guide
+        you step-by-step.
+      </p>
+      <form class="signup-form">
+        <label for="guardian-email" class="sr-only">Guardian email</label>
+        <input id="guardian-email" type="email" placeholder="Guardian email" required />
+        <button class="btn btn--primary" type="submit">Claim your free month</button>
+      </form>
+      <div class="signup-trust">
+        <span class="fa fa-smile"></span> Loved by 2M+ young readers worldwide
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="reading-benefits" data-scroll-animate>
+  <div class="reading-benefits__item">
+    <h4>Guided journeys</h4>
+    <p>Playful prompts and reading tips keep every chapter engaging—no more “Are we done yet?”</p>
+  </div>
+  <div class="reading-benefits__item">
+    <h4>Progress you can trust</h4>
+    <p>Real-time dashboards make it easy to see which badges are close and which skills to stretch next.</p>
+  </div>
+  <div class="reading-benefits__item">
+    <h4>Joyful accessibility</h4>
+    <p>High contrast modes, open dyslexic-friendly fonts, and audio companions meet every reader where they are.</p>
+  </div>
+</section>
