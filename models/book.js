@@ -26,13 +26,24 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      price: {
-        type: DataTypes.DECIMAL,
+      readingLevel: {
+        type: DataTypes.STRING,
         allowNull: false,
+        defaultValue: "general",
       },
-      inventory: {
-        type: DataTypes.INTEGER,
+      isFeatured: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
+        defaultValue: false,
+      },
+      collectionTag: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      isPremium: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       bookDescription: {
         type: DataTypes.TEXT,
@@ -49,7 +60,12 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
     });
-    Book.belongsToMany(models.Cart, { through: "Cartbook" });
+    if (models.PlanBookAccess && models.Plan) {
+      Book.belongsToMany(models.Plan, {
+        through: models.PlanBookAccess,
+        as: "plans",
+      });
+    }
   };
 
   return Book;
