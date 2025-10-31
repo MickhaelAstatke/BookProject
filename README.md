@@ -1,183 +1,125 @@
-# The EpicBook! - Project Documentation
+# The EpicBook! - Subscription Experience
 
 ## 📌 Introduction
 
-The **EpicBook!** project is an online bookstore application that allows users to browse a collection of books, add them to their cart, and proceed to checkout. This documentation provides an overview of the application's features, functionalities, and user flow.
+The **EpicBook!** project has transitioned from a one-time purchase cart to a membership-driven reading platform. Readers now choose a plan, activate trials, and unlock curated shelves tailored to their preferences.
 
 ## Documentation Structure
 
-1️⃣ Home Page
+1️⃣ Plan Catalogue
 
-2️⃣ Menu Navigation
+2️⃣ Trial Onboarding
 
-3️⃣ Gallery Section
+3️⃣ Account Management
 
-4️⃣ Product Details
+4️⃣ Premium Catalogue Access
 
-5️⃣ Add to Cart
-
-6️⃣ Cart & Order Summary
-
-7️⃣ Checkout & Order Confirmation
+5️⃣ Curated Collections
 
 #### Note: [Installation, Configuration & Troubleshooting Guide](https://github.com/pravinmishraaws/theepicbook/blob/main/Installation%20%26%20Configuration%20Guide.md)
 
 ## Application Architecture
 
-![Screenshot 2025-02-06 at 12 44 40](https://github.com/user-attachments/assets/50df00cb-ee85-4e9d-beb6-f63a862fbb2a)
-
-
----
-
-## **1️⃣ Home Page**
-
-### **Overview**
-
-The **Home Page** serves as the primary interface where users can explore different books available for purchase. It features a visually appealing layout with a structured book listing.
-
-### **Features:**
-
-- Displays a collection of books with their **title, author, and price**.
-- Users can click on a book to view more **detailed information**.
-- "**Add to Cart**" button for each book.
-- A **navigation bar** for accessing different sections of the site.
-
-![Screenshot 2025-02-06 at 08 15 06](https://github.com/user-attachments/assets/4aa515e7-fb05-4f57-8dd6-722a4bdab8b2)
-
-![Screenshot 2025-02-06 at 08 15 26](https://github.com/user-attachments/assets/f915a1a5-c5a0-4249-beb1-b09ea58bef79)
+![Subscription architecture diagram](https://github.com/user-attachments/assets/50df00cb-ee85-4e9d-beb6-f63a862fbb2a)
 
 ---
 
-## **2️⃣ Menu Navigation**
+## **1️⃣ Plan Catalogue**
 
 ### **Overview**
 
-The **menu** provides quick access to different book categories, enhancing user experience by allowing filtering.
+Visitors land on the plan selection screen where each tier highlights pricing, trial length, and featured benefits.
 
-### **Features:**
+### **Features**
 
-- Users can select categories like:
-  - **NYT Bestsellers**
-  - **Classics**
-  - **Children’s Books**
-  - **Top 9**
-  - **Social Justice**
-  - **Fantasy**
-- Responsive design with an expandable/collapsible sidebar.
-
-![Screenshot 2025-02-06 at 08 11 14](https://github.com/user-attachments/assets/6dabd639-75ee-4bd1-83c0-5d04bc042996)
+- Display plan name, description, and price with billing interval.
+- Surface included benefits such as curated shelves and live workshops.
+- Promote featured content sourced from the premium catalogue.
+- Offer quick actions to start a trial or activate the subscription immediately.
 
 ---
 
-## **3️⃣ Gallery Section**
+## **2️⃣ Trial Onboarding**
 
 ### **Overview**
 
-The **Gallery** provides a different view of books, displaying them in a visually attractive **grid format**.
+The onboarding page guides new readers through the trial activation process.
 
-### **Features:**
+### **Features**
 
-- Showcases books in a **larger display** for better visibility.
-- Each book has a "**Browse Through**" option for more details.
-- Seamless user experience with an intuitive interface.
-
-![Screenshot 2025-02-06 at 08 13 29](https://github.com/user-attachments/assets/428fbf43-11fd-4b07-81cc-5dad60f2ca3e)
+- Summarises the steps to personalise the reading dashboard.
+- Highlights plans that include trial days and the experiences they unlock.
+- Forms connect directly to the `/api/trials` endpoint to provision a trial subscription.
 
 ---
 
-## **4️⃣ Product Details Page**
+## **3️⃣ Account Management**
 
 ### **Overview**
 
-Clicking on a book opens the **Product Details Page**, where users can learn more before making a purchase.
+Members manage renewals, cancellations, and plan upgrades from the account view.
 
-### **Features:**
+### **Features**
 
-- **Book cover preview**
-- **Detailed description** of the book
-- **Genre, Publication Year, and Availability count**
-- **"Add to Cart" button** for easy purchase
-- **Modal pop-up design** to display details without leaving the current page
-
-![Screenshot 2025-02-06 at 08 19 14](https://github.com/user-attachments/assets/809d4c5c-1a51-454e-9e41-a55a3108d64a)
+- Displays current subscription status, renewal date, and trial expiry if applicable.
+- Buttons trigger API calls to renew or cancel an active subscription.
+- Provides quick actions to switch to another plan without leaving the page.
+- Integrates with the premium catalogue endpoint to surface exclusive shelves.
 
 ---
 
-## **5️⃣ Add to Cart**
+## **4️⃣ Premium Catalogue Access**
 
 ### **Overview**
 
-Users can add books to their **shopping cart** for purchase.
+Premium-only collections are gated behind an active trial or subscription.
 
-### **Features:**
+### **Features**
 
-- Clickable "**Add to Cart**" button for each book.
-- The **cart icon updates** in real time to reflect the number of items added.
-- Items remain in the cart until they are removed or purchased.
-
-![Screenshot 2025-02-06 at 08 22 42](https://github.com/user-attachments/assets/eb58f2f2-dbd5-4b8e-9448-699fde7b505e)
+- `/api/catalog/premium` validates subscription status before returning curated books.
+- Books display access types (full, excerpt, featured) based on plan entitlements.
+- Frontend renders the premium shelf dynamically once access is confirmed.
 
 ---
 
-## **6️⃣ Cart & Order Summary**
+## **5️⃣ Curated Collections**
 
 ### **Overview**
 
-The **Cart Page** allows users to review selected books before proceeding to checkout.
+Collections replace static categories and reflect the editorial curation tied to each membership tier.
 
-### **Features:**
+### **Features**
 
-- Displays a **list of books** added to the cart with title, quantity, and price.
-- An **Order Summary box** shows the **total price**.
-- A **"Checkout" button** to proceed with the order.
-
-![Screenshot 2025-02-06 at 08 24 48](https://github.com/user-attachments/assets/6bddfc9e-97d1-4723-9aad-0f9cf067fc58)
+- `/collections/:tag` renders books grouped by their `collectionTag` metadata.
+- Each book highlights the plans that grant access and the recommended reading level.
+- Encourages readers to explore thematic journeys unlocked through their plan.
 
 ---
-
-## **7️⃣ Checkout & Order Confirmation**
-
-### **Overview**
-
-The **Checkout Process** finalizes the purchase and confirms the order placement.
-
-### **Features:**
-
-- **Final Order Review** before placing the order.
-- **Checkout Button** to confirm the order.
-- **Confirmation Message**: A modal pop-up appears with the message **"Your order is placed!"**
-- **Cart is cleared** once the order is placed.
-
-![Screenshot 2025-02-06 at 08 25 23](https://github.com/user-attachments/assets/751de6c6-213f-4fa5-87c2-e8d1d3f34829)
 
 ## System Architecture
 
 ### 🛠️ Key Components
 
-- **Frontend**: HTML, CSS, JavaScript for UI rendering
-- **Backend**: Node.js + Express.js handles API requests
-- **Database**: MySQL for storing books, orders, and user data
-- **Reverse Proxy**: Nginx to handle request forwarding
+- **Frontend**: Handlebars templates + Materialize CSS for the new membership screens.
+- **Backend**: Node.js + Express.js powering subscription and catalogue APIs.
+- **Database**: MySQL storing authors, books, plans, benefits, and subscriptions.
+- **Reverse Proxy**: Nginx (planned) to forward traffic to the Node.js service.
 
-**Cloud Services (Future)**:  AWS EC2, RDS, S3, CloudFront, Lambda
+**Cloud Services (Future)**: AWS EC2, RDS, S3, CloudFront, Lambda
 
 ---
 
 ## 🎯 **Conclusion**
 
-The **EpicBook!** application provides a seamless user experience for discovering, selecting, and purchasing books online. With its well-structured navigation, visually appealing gallery, detailed product descriptions, and smooth checkout flow, it serves as a great example of an e-commerce bookstore.
+The refactored **EpicBook!** experience introduces tiered memberships, automated trials, and premium content gating. Readers can now seamlessly move from exploration to activation while enjoying curated journeys aligned with their subscription.
 
 ---
 
-### ** Next Steps**
+### **Next Steps**
 
-If you are developer, you can consider developing below feature and send the pull request.
+Developers can extend the platform by:
 
-- Deployment and hosting options.
-- Implementing a payment gateway.
-- Enhancing user authentication and order history.
-
-
-
-
+- Connecting the subscription ledger to an authentication system.
+- Integrating payment processors for real billing events.
+- Building analytics around collection engagement and churn.
 
