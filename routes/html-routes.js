@@ -2,115 +2,139 @@
 
 const express = require("express");
 const router = express.Router();
-const accounting= require("accounting");
-const lodash= require("lodash");
 const db = require("../models");
 
+function serializePlan(planInstance) {
+  const plan = planInstance.get({ plain: true });
+  plan.displayPrice = (plan.priceCents / 100).toFixed(2);
+  plan.featuredBooks = (plan.availableBooks || []).map((book) => ({
+    ...book,
+    authorName: book.Author
+      ? `${book.Author.firstName} ${book.Author.lastName}`
+      : null,
+  }));
+  return plan;
+}
 
-//index route
-router.get("/", async (req, res) => {
-  // fetching random 9 books to display in index page
-  const allBooks = await db.Book.findAll({
-    limit: 9,
-    include: [db.Author]
-  });
-  const distinctCategory = await db.Book.aggregate("genre", "DISTINCT", { plain: false });
-
-  const cartCount = await db.Cart.count();
-
-  Promise.all([allBooks, distinctCategory, cartCount])
-    .then((responses) => {
-      lodash.map(responses[0], (response) => {
-        const dataValues = response.dataValues;
-        dataValues.price = accounting.formatMoney(dataValues.price);
-        dataValues.modalhref = "#modal-book-" + dataValues.id;
-        dataValues.modalId = "modal-book-" + dataValues.id;
-        return response;
-      });
-
-      res.render("index", {
-        books: responses[0],
-        categories: responses[1],
-        cartCount: responses[2],
-      });
-    })
-    .catch((err) => console.log(err));
-});
-
-
-//category route
-router.post("/category/:categoryName", (req, res) => {
-  const booksByCategory = db.Book.findAll({
-    where: {
-      genre: req.body.genre,
-    },
-    include: [db.Author],
-  });
-
-  const distinctCategory = db.Book.aggregate("genre", "DISTINCT", { plain: false });
-
-  const cartCount = db.Cart.count();
-
-  Promise.all([booksByCategory, distinctCategory, cartCount])
-    .then((responses) => {
-      lodash.map(responses[0], (response) => {
-        const dataValues = response.dataValues;
-        dataValues.price = accounting.formatMoney(dataValues.price);
-        dataValues.modalhref = "#modal-book-" + dataValues.id;
-        dataValues.modalId = "modal-book-" + dataValues.id;
-        return response;
-      });
-
-      res.render("category", {
-        books: responses[0],
-        categories: responses[1],
-        cartCount: responses[2],
-      });
-    })
-    .catch((err) => console.log(err));
-});
-
-//cart route
-router.get("/cart", async (req, res) => {
-  const cartItems = await db.Cart.findAll({
-    include: [
-      {
-        model: db.Book,
-        through: {
-          model: db.CartBook,
+router.get("/", async (_req, res, next) => {
+  try {
+    const planInstances = await db.Plan.findAll({
+      include: [
+        {
+          model: db.Benefit,
+          as: "benefits",
+          through: { attributes: [] },
         },
-      },
-    ],
-  });
+        {
+          model: db.Book,
+          as: "availableBooks",
+          through: { attributes: ["accessType"] },
+          include: [db.Author],
+          where: { isFeatured: true },
+          required: false,
+        },
+      ],
+      order: [["priceCents", "ASC"]],
+    });
 
-  const distinctCategory = await db.Book.aggregate("genre", "DISTINCT", { plain: false });
+    const featuredBooks = await db.Book.findAll({
+      where: { isFeatured: true },
+      include: [db.Author],
+      limit: 6,
+    });
 
-  const cartCount = await db.Cart.count();
-
-  const totalPrice = await db.Cart.sum("price");
-
-  Promise.all([cartItems, distinctCategory, cartCount, totalPrice])
-    .then((responses) => {
-      const cart = lodash.map(responses[0], (response) => {
-        const dataValues = response.dataValues;
-        dataValues.price = accounting.formatMoney(dataValues.price);
-        return response;
-      });
-      res.render("cart", {
-        cart: cart,
-        categories: responses[1],
-        cartCount: responses[2],
-        subTotal: responses[3],
-      });
-    })
-    .catch((err) => console.log(err));
+    res.render("plan-selection", {
+      plans: planInstances.map(serializePlan),
+      featuredBooks: featuredBooks.map((bookInstance) => {
+        const book = bookInstance.get({ plain: true });
+        return {
+          ...book,
+          authorName: `${book.Author.firstName} ${book.Author.lastName}`,
+        };
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-//gallery route
-router.get("/gallery", async (req, res) => {
-  res.render("gallery", {
-  
-  });
+router.get("/onboarding", async (_req, res, next) => {
+  try {
+    const plans = await db.Plan.findAll({
+      where: { trialDays: { [db.Sequelize.Op.gt]: 0 } },
+      include: [{ model: db.Benefit, as: "benefits", through: { attributes: [] } }],
+      order: [["trialDays", "DESC"]],
+    });
+
+    res.render("onboarding", {
+      trialPlans: plans.map(serializePlan),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-(module.exports = router);
+router.get("/account", async (req, res, next) => {
+  try {
+    const { subscriptionId } = req.query;
+    let subscription = null;
+
+    if (subscriptionId) {
+      const subscriptionInstance = await db.Subscription.findByPk(subscriptionId, {
+        include: [
+          { model: db.Plan, as: "plan", include: [{ model: db.Benefit, as: "benefits", through: { attributes: [] } }] },
+        ],
+      });
+      if (subscriptionInstance) {
+        subscription = subscriptionInstance.get({ plain: true });
+        if (subscriptionInstance.plan) {
+          subscription.plan = serializePlan(subscriptionInstance.plan);
+        }
+        if (subscription.renewsOn) {
+          subscription.renewsOnFormatted = new Date(subscription.renewsOn).toDateString();
+        }
+        if (subscription.trialEndsAt) {
+          subscription.trialEndsAtFormatted = new Date(subscription.trialEndsAt).toDateString();
+        }
+      }
+    }
+
+    const plans = await db.Plan.findAll({ order: [["priceCents", "ASC"]] });
+
+    res.render("account", {
+      subscription,
+      plans: plans.map(serializePlan),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/collections/:tag", async (req, res, next) => {
+  try {
+    const tag = req.params.tag;
+    const books = await db.Book.findAll({
+      where: { collectionTag: tag },
+      include: [db.Author, { model: db.Plan, as: "plans", through: { attributes: ["accessType"] } }],
+    });
+
+    res.render("collection", {
+      tag,
+      books: books.map((bookInstance) => {
+        const book = bookInstance.get({ plain: true });
+        return {
+          ...book,
+          authorName: `${book.Author.firstName} ${book.Author.lastName}`,
+        };
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/gallery", (_req, res) => {
+  res.render("gallery");
+});
+
+module.exports = router;
