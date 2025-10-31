@@ -5,25 +5,33 @@
         <li class="collection-header center">
           <h5 class="center">Your Cart ({{cartCount}} Item(s))</h5>
         </li>
-        {{#each cart}}
-        <li class="collection-item avatar" id="cart-items">
-          <i class="circle brown lighten-3 fa fa-book"></i>
-          {{#each dataValues.Books}}
-          <span class="title">{{dataValues.title}}</span>
+        {{#if cart.length}}
+          {{#each cart}}
+          <li class="collection-item avatar" id="cart-items">
+            <i class="circle brown lighten-3 fa fa-book"></i>
+            {{#each books}}
+              <span class="title">{{title}}</span>
+              <p class="grey-text">Price: {{priceDisplay}}</p>
+            {{/each}}
+            <p style="padding-left: 15px;">Item total: {{priceDisplay}}</p>
+            {{#if childProfile}}
+              <p class="grey-text" style="padding-left: 15px;">For: {{childProfile.firstName}}{{#if childProfile.lastName}} {{childProfile.lastName}}{{/if}}</p>
+            {{/if}}
+          </li>
           {{/each}}
-          <p style="padding-left: 15px;">{{dataValues.price}}</p>
-          {{/each}}
-        </li>
-      </ul>   
+        {{else}}
+          <li class="collection-item">Your cart is empty.</li>
+        {{/if}}
+      </ul>
     </div>
-  {{#if cart}} 
+  {{#if cart.length}}
     <div class="col s8 push-s2 m6 push-m3 l4 push-l1 xl3 push-xl2">
       <ul class="collection with-header">
         <li class="collection-header center">
           <h5>Order Summary</h5>
         </li>
         <li class="collection-item center">
-          <span>Total: ${{subTotal}}</span>
+          <span>Total: {{subTotal}}</span>
         </li>
         <li class="collection-item center">
           <a class="blue-grey waves-effect waves-light btn-small modal-trigger checkout-button" href="#checkout-modal">Checkout</a>
@@ -39,5 +47,5 @@
         <a href="/" class="modal-close waves-effect waves-green btn-flat">Close</a>
       </div>
     </div>
-    {{/if }}
+    {{/if}}
 </div>

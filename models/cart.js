@@ -5,23 +5,27 @@ module.exports = function (sequelize, DataTypes) {
     "Cart",
     {
       id: {
-        // Sequelize module has INTEGER Data_Type.
         type: DataTypes.INTEGER,
-        // To increment user_id automatically.
         autoIncrement: true,
-        // user_id can not be null.
         allowNull: false,
-        // For uniquely identify user.
         primaryKey: true,
       },
       quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 1
+        defaultValue: 1,
       },
       price: {
         type: DataTypes.DECIMAL,
         allowNull: false,
+      },
+      UserId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      ChildProfileId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {
@@ -30,7 +34,9 @@ module.exports = function (sequelize, DataTypes) {
   );
   Cart.associate = function (models) {
     Cart.belongsToMany(models.Book, { through: "Cartbook" });
-    Cart.hasOne(models.Checkout);
+    Cart.belongsTo(models.User, { as: "user", foreignKey: "UserId" });
+    Cart.belongsTo(models.ChildProfile, { as: "childProfile", foreignKey: "ChildProfileId" });
+    Cart.hasOne(models.Checkout, { foreignKey: "CartId" });
   };
 
   return Cart;
