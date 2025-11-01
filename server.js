@@ -1,5 +1,9 @@
 "use strict";
 
+const loadEnv = require("./config/loadEnv");
+
+const loadedEnvFile = loadEnv();
+
 const express = require("express");
 const exphbs = require("express-handlebars");
 
@@ -14,6 +18,12 @@ const accountApiRoutes = require("./routes/account-api-routes");
 const authRoutes = require("./routes/auth-routes");
 
 const PORT = process.env.PORT || 8080;
+
+if (process.env.NODE_ENV !== "production" && !loadedEnvFile) {
+  console.warn(
+    "Starting server without a .env file. Create one (or copy .env.example) so Firebase keys are available."
+  );
+}
 
 const app = express();
 
