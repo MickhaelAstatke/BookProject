@@ -4,6 +4,10 @@
 
 The **EpicBook!** project has transitioned from a one-time purchase cart to a membership-driven reading platform. Readers now choose a plan, activate trials, and unlock curated shelves tailored to their preferences.
 
+> ℹ️ **Environment configuration**
+>
+> Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server now auto-loads the first matching `.env*` file it finds, so placing your Firebase keys in `.env.example` is enough for development, while production deployments should provide real secrets via environment variables.
+
 ## Documentation Structure
 
 1️⃣ Plan Catalogue
