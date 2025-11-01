@@ -1,6 +1,8 @@
 /* eslint-env jquery */
 $(document).ready(function () {
-  $(".modal").modal();
+  if ($.fn && typeof $.fn.modal === "function") {
+    $(".modal").modal();
+  }
   $(".cart-button").on("click", function (event) {
     event.preventDefault();
 

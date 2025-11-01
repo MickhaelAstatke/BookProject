@@ -1,6 +1,32 @@
 "use strict";
 
+const loadEnv = require("../config/loadEnv");
+
+const ENV_SOURCE = loadEnv();
+const FIREBASE_WARNING_FLAG = Symbol.for("bookProject.firebaseConfigWarned");
+
 const crypto = require("crypto");
+
+function warnMissingFirebaseConfig() {
+  if (global[FIREBASE_WARNING_FLAG]) {
+    return;
+  }
+
+  const hasClientConfig = Boolean(
+    process.env.FIREBASE_API_KEY &&
+      process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_APP_ID
+  );
+
+  if (!hasClientConfig) {
+    const sourceSuffix = ENV_SOURCE ? ` from ${ENV_SOURCE}` : "";
+    console.warn(
+      `Firebase client configuration is incomplete${sourceSuffix}. ` +
+        "Provide FIREBASE_API_KEY, FIREBASE_PROJECT_ID, and FIREBASE_APP_ID so sign-in works."
+    );
+    global[FIREBASE_WARNING_FLAG] = true;
+  }
+}
 
 function decodeBase64Url(input) {
   if (!input) {
@@ -85,6 +111,7 @@ async function verifyIdToken(idToken) {
 }
 
 function getClientConfig() {
+  warnMissingFirebaseConfig();
   return {
     apiKey: process.env.FIREBASE_API_KEY || "",
     authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
