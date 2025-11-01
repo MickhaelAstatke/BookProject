@@ -1,8 +1,12 @@
 "use strict";
 
 const loadEnv = require("../config/loadEnv");
+const ensureEnvLoaded =
+  (loadEnv && loadEnv.ensureEnvLoaded) || (typeof loadEnv === "function" ? loadEnv : null);
+const getEnvSource =
+  (loadEnv && loadEnv.getEnvSource) || (() => null);
 
-const ENV_SOURCE = loadEnv();
+const ENV_SOURCE = ensureEnvLoaded ? ensureEnvLoaded() : null;
 const FIREBASE_WARNING_FLAG = Symbol.for("bookProject.firebaseConfigWarned");
 
 const crypto = require("crypto");
@@ -19,7 +23,8 @@ function warnMissingFirebaseConfig() {
   );
 
   if (!hasClientConfig) {
-    const sourceSuffix = ENV_SOURCE ? ` from ${ENV_SOURCE}` : "";
+    const effectiveSource = ENV_SOURCE !== null ? ENV_SOURCE : getEnvSource();
+    const sourceSuffix = effectiveSource ? ` from ${effectiveSource}` : "";
     console.warn(
       `Firebase client configuration is incomplete${sourceSuffix}. ` +
         "Provide FIREBASE_API_KEY, FIREBASE_PROJECT_ID, and FIREBASE_APP_ID so sign-in works."

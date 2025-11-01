@@ -86,4 +86,22 @@ function loadEnv() {
   return null;
 }
 
+function ensureEnvLoaded() {
+  const cached = getCachedEnvSource();
+  if (typeof cached !== "undefined") {
+    return cached;
+  }
+  return loadEnv();
+}
+
+function getEnvSource() {
+  const cached = getCachedEnvSource();
+  if (typeof cached !== "undefined") {
+    return cached;
+  }
+  return null;
+}
+
 module.exports = loadEnv;
+module.exports.ensureEnvLoaded = ensureEnvLoaded;
+module.exports.getEnvSource = getEnvSource;
