@@ -102,7 +102,8 @@
     if (window.$ && typeof window.$(authModal).modal === "function") {
       window.$(authModal).modal("open");
     } else {
-      authModal.style.display = "block";
+      authModal.style.display = "flex";
+      authModal.setAttribute("aria-hidden", "false");
     }
   }
 
@@ -114,6 +115,7 @@
       window.$(authModal).modal("close");
     } else {
       authModal.style.display = "none";
+      authModal.setAttribute("aria-hidden", "true");
     }
   }
 
