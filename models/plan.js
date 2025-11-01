@@ -60,6 +60,10 @@ module.exports = function (sequelize, DataTypes) {
     if (models.Subscription) {
       Plan.hasMany(models.Subscription, {
         as: "subscriptions",
+        foreignKey: {
+          name: "PlanId",
+          allowNull: false,
+        },
       });
     }
   };
