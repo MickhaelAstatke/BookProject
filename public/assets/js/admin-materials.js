@@ -16,6 +16,11 @@
   const submitButton = form.querySelector("[data-submit]");
   const cancelButton = form.querySelector("[data-cancel]");
   const tableBody = adminContainer.querySelector("[data-materials-list]");
+  const importForm = adminContainer.querySelector("[data-import-form]");
+  const importInput = importForm ? importForm.querySelector("[data-import-input]") : null;
+  const importFeedback = importForm ? importForm.querySelector("[data-import-feedback]") : null;
+  const importSubmit = importForm ? importForm.querySelector("[data-import-submit]") : null;
+  const importClear = importForm ? importForm.querySelector("[data-import-clear]") : null;
 
   let editingId = null;
 
@@ -41,6 +46,19 @@
       feedback.classList.add("is-success");
     } else if (type === "error") {
       feedback.classList.add("is-error");
+    }
+  }
+
+  function setImportFeedback(type, message) {
+    if (!importFeedback) {
+      return;
+    }
+    importFeedback.textContent = message || "";
+    importFeedback.classList.remove("is-success", "is-error");
+    if (type === "success") {
+      importFeedback.classList.add("is-success");
+    } else if (type === "error") {
+      importFeedback.classList.add("is-error");
     }
   }
 
@@ -136,13 +154,7 @@
     setFeedback(null, "");
   }
 
-  function updateState(updatedMaterial) {
-    const index = materials.findIndex((material) => String(material.id) === String(updatedMaterial.id));
-    if (index === -1) {
-      materials.unshift(updatedMaterial);
-    } else {
-      materials.splice(index, 1, updatedMaterial);
-    }
+  function commitState() {
     window.__ADMIN_MATERIALS__ = {
       authors,
       materials,
@@ -150,13 +162,39 @@
     renderMaterials();
   }
 
+  function updateState(updatedMaterial) {
+    const index = materials.findIndex((material) => String(material.id) === String(updatedMaterial.id));
+    if (index === -1) {
+      materials.unshift(updatedMaterial);
+    } else {
+      materials.splice(index, 1, updatedMaterial);
+    }
+    commitState();
+  }
+
   function removeFromState(id) {
     materials = materials.filter((material) => String(material.id) !== String(id));
-    window.__ADMIN_MATERIALS__ = {
-      authors,
-      materials,
-    };
-    renderMaterials();
+    commitState();
+  }
+
+  function bulkUpsert(newMaterials) {
+    if (!Array.isArray(newMaterials) || !newMaterials.length) {
+      return;
+    }
+    let changed = false;
+    newMaterials.forEach((material) => {
+      const index = materials.findIndex((item) => String(item.id) === String(material.id));
+      if (index === -1) {
+        materials.unshift(material);
+        changed = true;
+      } else {
+        materials.splice(index, 1, material);
+        changed = true;
+      }
+    });
+    if (changed) {
+      commitState();
+    }
   }
 
   async function handleSubmit(event) {
@@ -223,6 +261,90 @@
     }
   }
 
+  function parseImportInput() {
+    if (!importInput) {
+      return null;
+    }
+    const raw = importInput.value.trim();
+    if (!raw) {
+      throw new Error("Paste a JSON array or object to import");
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      throw new Error("Invalid JSON. Please double-check your input.");
+    }
+  }
+
+  async function handleImportSubmit(event) {
+    event.preventDefault();
+    if (!importForm) {
+      return;
+    }
+
+    setImportFeedback(null, "");
+
+    let parsed;
+    try {
+      parsed = parseImportInput();
+    } catch (error) {
+      setImportFeedback("error", error.message);
+      return;
+    }
+
+    const payload = Array.isArray(parsed) ? { materials: parsed } : parsed;
+    if (!payload || (Array.isArray(payload.materials) && payload.materials.length === 0)) {
+      setImportFeedback("error", "Provide at least one material to import");
+      return;
+    }
+
+    if (importSubmit) {
+      importSubmit.disabled = true;
+      importSubmit.dataset.loading = "true";
+    }
+
+    try {
+      const response = await fetch("/api/admin/materials/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to import materials");
+      }
+
+      if (Array.isArray(data.materials)) {
+        bulkUpsert(data.materials);
+        const count = data.materials.length;
+        setImportFeedback("success", `Imported ${count} material${count === 1 ? "" : "s"}.`);
+      } else {
+        setImportFeedback("success", "Materials imported successfully");
+      }
+
+      if (importInput) {
+        importInput.value = "";
+      }
+    } catch (error) {
+      console.error(error);
+      setImportFeedback("error", error.message || "Failed to import materials");
+    } finally {
+      if (importSubmit) {
+        importSubmit.disabled = false;
+        delete importSubmit.dataset.loading;
+      }
+    }
+  }
+
+  function handleImportClear() {
+    if (importInput) {
+      importInput.value = "";
+    }
+    setImportFeedback(null, "");
+  }
+
   function handleTableClick(event) {
     const editButton = event.target.closest("[data-edit]");
     const deleteButton = event.target.closest("[data-delete]");
@@ -253,6 +375,13 @@
   form.addEventListener("submit", handleSubmit);
   cancelButton.addEventListener("click", handleCancel);
   tableBody.addEventListener("click", handleTableClick);
+
+  if (importForm) {
+    importForm.addEventListener("submit", handleImportSubmit);
+    if (importClear) {
+      importClear.addEventListener("click", handleImportClear);
+    }
+  }
 
   renderMaterials();
 })();

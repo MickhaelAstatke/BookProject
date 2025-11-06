@@ -76,6 +76,34 @@
     </form>
   </div>
 
+  <div class="admin-materials__card admin-materials__card--import">
+    <h2 class="admin-materials__section-title">Bulk import materials</h2>
+    <p class="admin-materials__helper-text">
+      Paste a JSON array of material objects to import multiple records at once. Each entry should include at least
+      <code>title</code>, <code>type</code>, <code>assetUrl</code>, and an <code>AuthorId</code> or author name.
+    </p>
+    <form id="material-import-form" class="admin-materials__form" data-import-form>
+      <div class="input-field">
+        <label for="material-import-json">Materials JSON</label>
+        <textarea
+          id="material-import-json"
+          name="materials"
+          rows="8"
+          placeholder='[
+  {"title": "Example", "type": "book", "AuthorId": 1, "assetUrl": "https://..."}
+]'
+          data-import-input
+          required
+        ></textarea>
+      </div>
+      <div class="admin-materials__actions">
+        <button type="submit" class="btn btn--primary" data-import-submit>Import materials</button>
+        <button type="button" class="btn btn--ghost" data-import-clear>Clear</button>
+      </div>
+      <p class="form-feedback" data-import-feedback role="alert" aria-live="polite"></p>
+    </form>
+  </div>
+
   <div class="admin-materials__list">
     <h2 class="admin-materials__section-title">Existing materials</h2>
     <div class="table-responsive">

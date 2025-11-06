@@ -172,6 +172,109 @@ function extractMaterialPayload(req, existingMaterial) {
   };
 }
 
+async function resolveAuthorIdForImport(raw) {
+  if (raw == null) {
+    const error = new Error("Author details are required for import");
+    error.status = 400;
+    throw error;
+  }
+
+  const possibleId = raw.AuthorId ?? raw.authorId;
+  if (possibleId != null) {
+    const parsedId = parseInt(possibleId, 10);
+    if (!Number.isNaN(parsedId)) {
+      return parsedId;
+    }
+  }
+
+  const authorObject = raw.author || raw.Author;
+  if (authorObject && typeof authorObject === "object") {
+    const firstName = authorObject.firstName || authorObject.first_name || authorObject.first;
+    const lastName = authorObject.lastName || authorObject.last_name || authorObject.last;
+    if (firstName && lastName) {
+      const [author] = await db.Author.findOrCreate({
+        where: {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+        },
+        defaults: {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+        },
+      });
+      return author.id;
+    }
+  }
+
+  const authorName = raw.authorName || raw.AuthorName || raw.author;
+  if (typeof authorName === "string" && authorName.trim()) {
+    const parts = authorName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      const lastName = parts.pop();
+      const firstName = parts.join(" ");
+      const [author] = await db.Author.findOrCreate({
+        where: {
+          firstName,
+          lastName,
+        },
+        defaults: {
+          firstName,
+          lastName,
+        },
+      });
+      return author.id;
+    }
+  }
+
+  const error = new Error("AuthorId or author name is required for import");
+  error.status = 400;
+  throw error;
+}
+
+async function normalizeImportMaterial(raw, uploaderId) {
+  const title = typeof raw.title === "string" ? raw.title.trim() : "";
+  if (!title) {
+    const error = new Error("Title is required for each imported material");
+    error.status = 400;
+    throw error;
+  }
+
+  const type = validateType(raw.type);
+  const description = typeof raw.description === "string" ? raw.description.trim() : null;
+  const thumbnailUrl = typeof raw.thumbnailUrl === "string" && raw.thumbnailUrl.trim()
+    ? raw.thumbnailUrl.trim()
+    : null;
+  const assetUrl = typeof raw.assetUrl === "string" && raw.assetUrl.trim() ? raw.assetUrl.trim() : null;
+
+  if (!assetUrl) {
+    const error = new Error(`An assetUrl is required for "${title}"`);
+    error.status = 400;
+    throw error;
+  }
+
+  const AuthorId = await resolveAuthorIdForImport(raw);
+  const isPremium = normalizeBoolean(raw.isPremium);
+  let targetUploaderId = uploaderId;
+  if (raw.UserId != null || raw.userId != null) {
+    const possible = raw.UserId ?? raw.userId;
+    const parsed = parseInt(possible, 10);
+    if (!Number.isNaN(parsed)) {
+      targetUploaderId = parsed;
+    }
+  }
+
+  return {
+    title,
+    type,
+    description,
+    thumbnailUrl,
+    assetUrl,
+    isPremium,
+    AuthorId,
+    UserId: targetUploaderId,
+  };
+}
+
 router.get("/admin/materials", requireAdminPage, async (req, res, next) => {
   try {
     const [materials, authors] = await Promise.all([fetchMaterials(), fetchAuthors()]);
@@ -224,6 +327,50 @@ router.post("/api/admin/materials", requireAdminApi, uploadFields, async (req, r
     }
     const status = error.status || 500;
     res.status(status).json({ error: error.message || "Failed to create material" });
+  }
+});
+
+router.post("/api/admin/materials/import", requireAdminApi, async (req, res) => {
+  try {
+    let rawMaterials = [];
+    if (Array.isArray(req.body.materials)) {
+      rawMaterials = req.body.materials;
+    } else if (req.body && typeof req.body.materials === "object") {
+      rawMaterials = [req.body.materials];
+    } else if (Array.isArray(req.body)) {
+      rawMaterials = req.body;
+    } else if (req.body && typeof req.body === "object") {
+      rawMaterials = [req.body];
+    }
+
+    if (!Array.isArray(rawMaterials) || rawMaterials.length === 0) {
+      return res.status(400).json({ error: "Provide an array of materials to import" });
+    }
+
+    const uploaderId = req.user.id;
+    const payloads = [];
+    for (const raw of rawMaterials) {
+      const normalized = await normalizeImportMaterial(raw || {}, uploaderId);
+      payloads.push(normalized);
+    }
+
+    const created = await db.Material.bulkCreate(payloads, { returning: true });
+    const ids = created.map((material) => material.id);
+    const imported = await db.Material.findAll({
+      where: { id: ids },
+      include: [
+        { model: db.Author, attributes: ["id", "firstName", "lastName"] },
+        { model: db.User, as: "uploader", attributes: ["id", "displayName", "email", "isAdmin"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const formatted = imported.map(buildMaterialResponse);
+    res.status(201).json({ materials: formatted });
+  } catch (error) {
+    console.error("Failed to import materials", error);
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message || "Failed to import materials" });
   }
 });
 
