@@ -35,6 +35,11 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         defaultValue: true,
       },
+      isAdmin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       subscriptionStatus: {
         type: DataTypes.ENUM("inactive", "trial", "active", "past_due", "canceled"),
         allowNull: false,
@@ -71,6 +76,7 @@ module.exports = function (sequelize, DataTypes) {
     User.hasMany(models.Cart, { as: "cartItems", foreignKey: "UserId" });
     User.hasMany(models.Subscription, { as: "subscriptions", foreignKey: "UserId" });
     User.hasMany(models.ReadingProgress, { as: "readingProgress", foreignKey: "UserId" });
+    User.hasMany(models.Material, { as: "uploadedMaterials", foreignKey: "UserId" });
   };
 
   User.prototype.toSafeJSON = function () {
