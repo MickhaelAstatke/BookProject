@@ -16,6 +16,7 @@ const htmlRoutes = require("./routes/html-routes");
 const cartApiRoutes = require("./routes/cart-api-routes");
 const accountApiRoutes = require("./routes/account-api-routes");
 const authRoutes = require("./routes/auth-routes");
+const adminMaterialRoutes = require("./routes/admin-materials");
 
 const PORT = process.env.PORT || 8080;
 
@@ -66,6 +67,7 @@ app.use((req, res, next) => {
 app.use("/api/cart", cartApiRoutes);
 app.use("/api/account", accountApiRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/", adminMaterialRoutes);
 app.use("/", htmlRoutes);
 
 const syncOptions = {};
