@@ -1,0 +1,157 @@
+<section class="admin-materials" data-admin-materials>
+  <div class="admin-materials__header">
+    <h1 class="admin-materials__title">{{pageTitle}}</h1>
+    <p class="admin-materials__subtitle">
+      Upload books, audiobooks, or videos and manage their metadata. Files are stored in <code>/public/uploads</code> and served
+      from <code>/uploads/</code>.
+    </p>
+  </div>
+
+  <div class="admin-materials__card">
+    <h2 class="admin-materials__section-title" data-form-title>Upload a new material</h2>
+    <form id="material-form" class="admin-materials__form" enctype="multipart/form-data" novalidate>
+      <div class="form-grid">
+        <div class="input-field">
+          <label for="material-title">Title</label>
+          <input id="material-title" name="title" type="text" required />
+        </div>
+        <div class="input-field">
+          <label for="material-type">Type</label>
+          <select id="material-type" name="type" required>
+            <option value="">Select a type</option>
+            <option value="book">Book</option>
+            <option value="audiobook">Audiobook</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label for="material-author">Author</label>
+          <select id="material-author" name="AuthorId" required>
+            <option value="">Select an author</option>
+            {{#each authors}}
+              <option value="{{id}}">{{fullName}}</option>
+            {{/each}}
+          </select>
+        </div>
+        <div class="input-field input-field--checkbox">
+          <label for="material-premium">Premium</label>
+          <input id="material-premium" name="isPremium" type="checkbox" />
+        </div>
+      </div>
+
+      <div class="input-field">
+        <label for="material-description">Description</label>
+        <textarea id="material-description" name="description" rows="4" placeholder="Short synopsis or notes"></textarea>
+      </div>
+
+      <fieldset class="admin-materials__fieldset">
+        <legend>Thumbnail</legend>
+        <div class="input-field">
+          <label for="material-thumbnail">Upload image</label>
+          <input id="material-thumbnail" name="thumbnail" type="file" accept="image/*" />
+        </div>
+        <div class="input-field">
+          <label for="material-thumbnail-url">Or provide an existing URL</label>
+          <input id="material-thumbnail-url" name="thumbnailUrl" type="url" placeholder="https://" />
+        </div>
+      </fieldset>
+
+      <fieldset class="admin-materials__fieldset">
+        <legend>Asset</legend>
+        <div class="input-field">
+          <label for="material-asset">Upload file</label>
+          <input id="material-asset" name="asset" type="file" />
+        </div>
+        <div class="input-field">
+          <label for="material-asset-url">Or provide an existing URL <span class="input-hint">(required if no file)</span></label>
+          <input id="material-asset-url" name="assetUrl" type="url" placeholder="https://" />
+        </div>
+      </fieldset>
+
+      <div class="admin-materials__actions">
+        <button type="submit" class="btn btn--primary" data-submit>Create material</button>
+        <button type="button" class="btn btn--ghost" data-cancel hidden>Cancel edit</button>
+      </div>
+      <p class="form-feedback" data-feedback role="alert" aria-live="polite"></p>
+    </form>
+  </div>
+
+  <div class="admin-materials__list">
+    <h2 class="admin-materials__section-title">Existing materials</h2>
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Author</th>
+            <th>Premium</th>
+            <th>Uploader</th>
+            <th>Asset</th>
+            <th>Thumbnail</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody data-materials-list>
+          {{#if materials.length}}
+            {{#each materials}}
+              <tr data-material-id="{{id}}">
+                <td data-cell="title">{{title}}</td>
+                <td data-cell="type">{{type}}</td>
+                <td data-cell="author" data-author-id="{{AuthorId}}">
+                  {{#if Author}}
+                    {{Author.firstName}} {{Author.lastName}}
+                  {{else}}
+                    —
+                  {{/if}}
+                </td>
+                <td data-cell="premium">{{#if isPremium}}Yes{{else}}No{{/if}}</td>
+                <td data-cell="uploader">
+                  {{#if uploader}}
+                    {{#if uploader.displayName}}
+                      {{uploader.displayName}}
+                    {{else}}
+                      {{uploader.email}}
+                    {{/if}}
+                  {{else}}
+                    —
+                  {{/if}}
+                </td>
+                <td data-cell="asset">
+                  {{#if assetUrl}}
+                    <a href="{{assetUrl}}" target="_blank" rel="noopener">Open</a>
+                  {{else}}
+                    —
+                  {{/if}}
+                </td>
+                <td data-cell="thumbnail">
+                  {{#if thumbnailUrl}}
+                    <a href="{{thumbnailUrl}}" target="_blank" rel="noopener">View</a>
+                  {{else}}
+                    —
+                  {{/if}}
+                </td>
+                <td class="admin-table__actions">
+                  <button type="button" class="btn btn--small" data-edit>Edit</button>
+                  <button type="button" class="btn btn--small btn--danger" data-delete>Delete</button>
+                </td>
+              </tr>
+            {{/each}}
+          {{else}}
+            <tr>
+              <td colspan="8" class="admin-table__empty">No materials have been uploaded yet.</td>
+            </tr>
+          {{/if}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+  window.__ADMIN_MATERIALS__ = {
+    authors: {{{json authors}}},
+    materials: {{{json materials}}},
+  };
+</script>
+<script src="/assets/js/admin-materials.js" type="text/javascript"></script>
