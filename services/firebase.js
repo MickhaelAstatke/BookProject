@@ -1,6 +1,6 @@
 "use strict";
 
-import 'dotenv/config';
+
 const crypto = require("crypto");
 
 function decodeBase64Url(input) {
