@@ -1,0 +1,15 @@
+<svg width="320" height="480" viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Book cover placeholder">
+  <defs>
+    <linearGradient id="coverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6759ff" />
+      <stop offset="100%" stop-color="#ff9b4a" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="480" rx="24" fill="url(#coverGradient)" />
+  <g fill="#ffffff" opacity="0.85">
+    <path d="M80 140h160v20H80zM80 190h140v20H80zM80 240h120v20H80z" />
+    <circle cx="110" cy="330" r="36" fill="none" stroke="#ffffff" stroke-width="6" />
+    <circle cx="210" cy="330" r="36" fill="none" stroke="#ffffff" stroke-width="6" />
+    <path d="M110 300c0-30 100-30 100 0" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
+  </g>
+</svg>
