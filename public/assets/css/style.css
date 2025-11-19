@@ -760,6 +760,22 @@ img {
   transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
+.story-card__figure {
+  margin: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(103, 89, 255, 0.08);
+  box-shadow: 0 12px 24px rgba(25, 22, 64, 0.15);
+}
+
+.story-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 2 / 3;
+}
+
 .story-card:hover,
 .story-card:focus-within {
   transform: translateY(-6px);

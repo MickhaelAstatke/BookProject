@@ -40,6 +40,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      coverImageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       isPremium: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
