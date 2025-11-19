@@ -8,6 +8,8 @@ const lodash = require("lodash");
 const db = require("../models");
 const { requireAuthPage } = require("../middleware/auth");
 
+const COVER_PLACEHOLDER = "/assets/img/cover-placeholder.svg";
+
 async function getDistinctCategories() {
   return db.Book.aggregate("genre", "DISTINCT", { plain: false });
 }
@@ -48,6 +50,26 @@ async function fetchGalleryMaterials() {
   });
 }
 
+function formatBookForDisplay(book) {
+  const dataValues = book.get({ plain: true });
+  dataValues.price = accounting.formatMoney(dataValues.price);
+  dataValues.modalhref = `#modal-book-${dataValues.id}`;
+  dataValues.modalId = `modal-book-${dataValues.id}`;
+  dataValues.coverImageUrl = dataValues.coverImageUrl || COVER_PLACEHOLDER;
+
+  if (dataValues.Author) {
+    const firstName = dataValues.Author.firstName || "";
+    const lastName = dataValues.Author.lastName || "";
+    const combinedName = `${firstName} ${lastName}`.trim();
+    dataValues.Author.name = combinedName || dataValues.Author.name;
+    if (!dataValues.Author.name) {
+      dataValues.Author = null;
+    }
+  }
+
+  return dataValues;
+}
+
 router.get("/", async (req, res) => {
   try {
     const [books, categories, cartMeta] = await Promise.all([
@@ -59,13 +81,7 @@ router.get("/", async (req, res) => {
       getCartMeta(req.user ? req.user.id : null),
     ]);
 
-    const formattedBooks = lodash.map(books, (book) => {
-      const dataValues = book.get({ plain: true });
-      dataValues.price = accounting.formatMoney(dataValues.price);
-      dataValues.modalhref = `#modal-book-${dataValues.id}`;
-      dataValues.modalId = `modal-book-${dataValues.id}`;
-      return dataValues;
-    });
+    const formattedBooks = lodash.map(books, formatBookForDisplay);
 
     return res.render("index", {
       books: formattedBooks,
@@ -93,13 +109,7 @@ router.post("/category/:categoryName", requireAuthPage, async (req, res) => {
       getCartMeta(req.user.id),
     ]);
 
-    const formattedBooks = lodash.map(booksByCategory, (book) => {
-      const dataValues = book.get({ plain: true });
-      dataValues.price = accounting.formatMoney(dataValues.price);
-      dataValues.modalhref = `#modal-book-${dataValues.id}`;
-      dataValues.modalId = `modal-book-${dataValues.id}`;
-      return dataValues;
-    });
+    const formattedBooks = lodash.map(booksByCategory, formatBookForDisplay);
 
     return res.render("category", {
       books: formattedBooks,

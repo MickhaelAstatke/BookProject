@@ -23,6 +23,15 @@
     {{#each books}}
       <article class="story-card" aria-label="{{title}} shelf card">
         <div class="story-card__badge reading-badge reading-badge--{{readingLevel}}">{{readingLevel}}</div>
+        <figure class="story-card__figure">
+          <img
+            class="story-card__image"
+            src="{{coverImageUrl}}"
+            alt="{{#if Author}}Cover of {{title}} by {{Author.name}}{{else}}Cover art for {{title}}{{/if}}"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
         <h4 class="story-card__title">{{title}}</h4>
         {{#if Author}}
           <p class="story-card__author">by {{Author.name}}</p>

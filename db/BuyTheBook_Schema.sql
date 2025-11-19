@@ -24,6 +24,7 @@ CREATE TABLE `bookstore`.`Book` (
   `readingLevel` VARCHAR(50) NOT NULL DEFAULT 'general',
   `isFeatured` TINYINT(1) NOT NULL DEFAULT 0,
   `collectionTag` VARCHAR(100) NULL,
+  `coverImageUrl` VARCHAR(512) NULL,
   `isPremium` TINYINT(1) NOT NULL DEFAULT 0,
   `bookDescription` TEXT NOT NULL,
   `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
