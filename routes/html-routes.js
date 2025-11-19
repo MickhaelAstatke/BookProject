@@ -28,6 +28,26 @@ async function getCartMeta(userId) {
   };
 }
 
+async function fetchGalleryMaterials() {
+  const materials = await db.Material.findAll({
+    include: [
+      {
+        model: db.Author,
+        attributes: ["id", "firstName", "lastName"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return materials.map((material) => {
+    const plain = material.get({ plain: true });
+    const author = plain.Author;
+    plain.authorName = author ? `${author.firstName} ${author.lastName}`.trim() : "Unknown";
+    plain.typeLabel = plain.type ? plain.type.charAt(0).toUpperCase() + plain.type.slice(1) : "";
+    return plain;
+  });
+}
+
 router.get("/", async (req, res) => {
   try {
     const [books, categories, cartMeta] = await Promise.all([
@@ -145,14 +165,16 @@ router.get("/cart", requireAuthPage, async (req, res) => {
 
 router.get("/gallery", requireAuthPage, async (req, res) => {
   try {
-    const [categories, cartMeta] = await Promise.all([
+    const [categories, cartMeta, materials] = await Promise.all([
       getDistinctCategories(),
       getCartMeta(req.user.id),
+      fetchGalleryMaterials(),
     ]);
 
     return res.render("gallery", {
       categories,
       cartCount: cartMeta.cartCount,
+      materials,
     });
   } catch (error) {
     console.error("Failed to render gallery", error);
