@@ -47,6 +47,10 @@
             <span class="fa fa-user"></span>
             <span class="nav-pill__label">Account</span>
           </a>
+          <a href="/admin/materials" id="admin-link" class="nav-pill nav-pill--ghost" style="display:none;">
+            <span class="fa fa-shield-alt"></span>
+            <span class="nav-pill__label">Admin</span>
+          </a>
           <a href="#" id="logout-link" class="nav-pill nav-pill--ghost" style="display:none;">
             <span class="fa fa-sign-out-alt"></span>
             <span class="nav-pill__label">Log out</span>
@@ -159,7 +163,9 @@
             <input id="login-password" type="password" required />
           </div>
           <button class="btn btn--primary" type="submit">Sign in</button>
+          <button class="btn btn--ghost" type="button" id="google-signin">Continue with Google</button>
           <p id="login-error" class="form-error"></p>
+          <p id="login-verify-note" class="form-error"></p>
           <p class="switch-auth">Need an account? <a href="#" id="show-signup">Sign up</a></p>
         </form>
         <form id="signup-form" class="auth-form hide">
@@ -180,7 +186,9 @@
             <input id="signup-confirm-password" type="password" required />
           </div>
           <button class="btn btn--primary" type="submit">Create account</button>
+          <button class="btn btn--ghost" type="button" id="signup-google">Sign up with Google</button>
           <p id="signup-error" class="form-error"></p>
+          <p id="signup-verify-note" class="form-error"></p>
           <p class="switch-auth">Already have an account? <a href="#" id="show-login">Sign in</a></p>
         </form>
       </div>

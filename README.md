@@ -237,3 +237,22 @@ Developers can extend the platform by:
 - Connecting the subscription ledger to an authentication system.
 - Integrating payment processors for real billing events.
 - Building analytics around collection engagement and churn.
+
+
+## Authentication and Admin features
+
+- Firebase authentication now supports:
+  - Email/password signup with mandatory email verification.
+  - Google sign-in/sign-up (OAuth popup flow).
+- User records persist authentication metadata in MySQL (`authProvider`, `emailVerified`, `lastLoginAt`).
+- Admin access is role-based via `adminRole` (`super_admin`, `content_admin`, `security_admin`, `support_admin`).
+- Admin APIs:
+  - `GET /api/admin/materials` (requires `materials:read`)
+  - `POST|PUT|DELETE /api/admin/materials...` (requires `materials:write`)
+  - `GET /api/admin/users` and `PUT /api/admin/users/:id/role` (requires `users:manage`)
+
+Run migrations after pulling these changes:
+
+```bash
+npm run db:migrate
+```
