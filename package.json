@@ -5,11 +5,12 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "lint": "./node_modules/.bin/eslint \"**/*.js \"",
+    "lint": "eslint . --ext .js",
     "test": "npm run lint",
     "db:migrate": "sequelize db:migrate",
     "db:seed": "sequelize db:seed:all",
-    "db:reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all"
+    "db:reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all",
+    "lint:fix": "npm run lint -- --fix"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,6 @@
     "@handlebars/allow-prototype-access": "^1.0.3",
     "accounting": "^0.4.1",
     "dotenv-safe": "^9.1.0",
-    "eslint": "^7.4.0",
-    "eslint-plugin-import": "^2.22.0",
     "express": "^4.17.1",
     "express-handlebars": "^5.0.0",
     "firebase": "^12.5.0",
