@@ -4,20 +4,84 @@
 
 The **EpicBook!** project has transitioned from a one-time purchase cart to a membership-driven reading platform. Readers now choose a plan, activate trials, and unlock curated shelves tailored to their preferences.
 
-> ℹ️ **Environment configuration**
->
-> Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server now auto-loads the first matching `.env*` file it finds, so placing your Firebase keys in `.env.example` is enough for development, while production deployments should provide real secrets via environment variables.
+## Quick Start (macOS / Linux / Windows via WSL)
 
-## Node.js & npm Version Setup
+### Required versions
 
-This project supports **Node.js 20.x** with **npm 10.x**.
+- **Node.js:** `20.x`
+- **npm:** `10.x`
+- **MySQL:** `5.7+` (local install or Docker)
+- **Git**
 
-Recommended local setup path:
+> If you use Windows, run this project in **WSL2** (Ubuntu recommended) and execute all commands below from the WSL shell.
+
+### 1) Environment setup
+
+Create local environment variables from the sample file:
 
 ```bash
-nvm use
+cp .env.example .env
+```
+
+Update at least these values in `.env`:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- Firebase variables (`FIREBASE_*`) for features that require Firebase services
+
+### 2) Install dependencies
+
+If you use `nvm`, switch to the project runtime first, then install packages:
+
+```bash
+nvm use 20
 npm ci
 ```
+
+### 3) Database setup
+
+Create the database in MySQL (example uses the default DB name):
+
+```sql
+CREATE DATABASE bookstore;
+```
+
+### 4) Run migrations
+
+```bash
+npm run db:migrate
+```
+
+Optional seed data:
+
+```bash
+npm run db:seed
+```
+
+### 5) Run the application
+
+```bash
+npm start
+```
+
+The app starts on `http://localhost:8080` by default.
+
+## Troubleshooting (Local Development)
+
+- **Port collision on `8080`**
+  - Run: `lsof -i :8080` (macOS/Linux/WSL) to identify the process.
+  - Stop the process or run this app on a different port.
+
+- **Database auth errors (`ER_ACCESS_DENIED_ERROR`)**
+  - Re-check `DB_USER` and `DB_PASSWORD` in `.env`.
+  - Verify MySQL user permissions for `DB_NAME`.
+
+- **Missing environment variables / startup validation errors**
+  - Ensure `.env` exists and was copied from `.env.example`.
+  - Confirm required keys are present and not left as placeholder values.
 
 ## Docker + Local Startup Flow
 
@@ -54,29 +118,6 @@ Use Docker Compose for the app + MySQL services and keep DB credentials aligned 
    ```
 
 > The included `Dockerfile` standardizes Node 20 + npm 10 so local and CI environments run the same base image.
-
-## Database Setup Workflow (Local Development)
-
-- Run schema changes through Sequelize migrations instead of relying on startup auto-sync.
-- Apply migrations:
-
-  ```bash
-  npm run db:migrate
-  ```
-
-- Seed reference data:
-
-  ```bash
-  npm run db:seed
-  ```
-
-- Reset local database state (undo + re-run migrations + seeds):
-
-  ```bash
-  npm run db:reset
-  ```
-
-> ⚠️ By default, app startup no longer runs `alter`/`force` sync behavior against shared databases. Only set `DB_SYNC_ALTER=true` or `DB_SYNC_FORCE=true` for explicit local-only troubleshooting.
 
 ## Documentation Structure
 
