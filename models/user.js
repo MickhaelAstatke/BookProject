@@ -40,6 +40,23 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         defaultValue: false,
       },
+      adminRole: {
+        type: DataTypes.ENUM("super_admin", "content_admin", "security_admin", "support_admin"),
+        allowNull: true,
+      },
+      emailVerified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      authProvider: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      lastLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
       subscriptionStatus: {
         type: DataTypes.ENUM("inactive", "trial", "active", "past_due", "canceled"),
         allowNull: false,
