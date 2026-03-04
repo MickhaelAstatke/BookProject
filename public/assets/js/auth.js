@@ -7,12 +7,18 @@
   const signupForm = document.getElementById("signup-form");
   const loginError = document.getElementById("login-error");
   const signupError = document.getElementById("signup-error");
+  const loginVerifyNote = document.getElementById("login-verify-note");
+  const signupVerifyNote = document.getElementById("signup-verify-note");
+  const googleSigninButton = document.getElementById("google-signin");
+  const googleSignupButton = document.getElementById("signup-google");
   const loginLink = document.getElementById("login-link");
   const logoutLink = document.getElementById("logout-link");
   const accountLink = document.getElementById("account-link");
+  const adminLink = document.getElementById("admin-link");
   const showSignupLink = document.getElementById("show-signup");
   const showLoginLink = document.getElementById("show-login");
   const serverKnowsUser = Boolean(window.__SERVER_KNOWS_USER__);
+  const serverCurrentUser = window.__SERVER_CURRENT_USER__ || null;
 
   function readSessionCookie() {
     const cookie = document.cookie || "";
@@ -37,16 +43,6 @@
       });
     }
   }
-
-  function getAuthHeaders() {
-    const headers = {};
-    if (window.__AUTH_TOKEN__) {
-      headers.Authorization = "Bearer " + window.__AUTH_TOKEN__;
-    }
-    return headers;
-  }
-
-  window.getAuthHeaders = getAuthHeaders;
 
   function setSessionCookie(token, expirationTime) {
     if (!token) {
@@ -83,16 +79,18 @@
     attachAjaxAuthorization();
   }
 
+  function setElementVisible(element, visible) {
+    if (!element) {
+      return;
+    }
+    element.style.display = visible ? "inline-block" : "none";
+  }
+
   function updateAuthUI(isAuthenticated) {
-    if (loginLink) {
-      loginLink.style.display = isAuthenticated ? "none" : "inline-block";
-    }
-    if (logoutLink) {
-      logoutLink.style.display = isAuthenticated ? "inline-block" : "none";
-    }
-    if (accountLink) {
-      accountLink.style.display = isAuthenticated ? "inline-block" : "none";
-    }
+    setElementVisible(loginLink, !isAuthenticated);
+    setElementVisible(logoutLink, isAuthenticated);
+    setElementVisible(accountLink, isAuthenticated);
+    setElementVisible(adminLink, isAuthenticated && Boolean(serverCurrentUser && serverCurrentUser.isAdmin));
   }
 
   function openAuthModal() {
@@ -126,15 +124,10 @@
     if (signupForm) {
       signupForm.classList.add("hide");
     }
-    if (loginError) {
-      loginError.textContent = "";
-    }
-    if (signupError) {
-      signupError.textContent = "";
-    }
-    if (window.M && typeof window.M.updateTextFields === "function") {
-      window.M.updateTextFields();
-    }
+    if (loginError) {loginError.textContent = "";}
+    if (signupError) {signupError.textContent = "";}
+    if (loginVerifyNote) {loginVerifyNote.textContent = "";}
+    if (signupVerifyNote) {signupVerifyNote.textContent = "";}
   }
 
   function showSignupForm() {
@@ -144,19 +137,33 @@
     if (loginForm) {
       loginForm.classList.add("hide");
     }
-    if (loginError) {
-      loginError.textContent = "";
+    if (loginError) {loginError.textContent = "";}
+    if (signupError) {signupError.textContent = "";}
+    if (loginVerifyNote) {loginVerifyNote.textContent = "";}
+    if (signupVerifyNote) {signupVerifyNote.textContent = "";}
+  }
+
+  async function signInWithGoogle(auth) {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope("email");
+    provider.addScope("profile");
+    await auth.signInWithPopup(provider);
+    closeAuthModal();
+  }
+
+  async function requireVerifiedEmail(user) {
+    if (!user || user.emailVerified) {
+      return true;
     }
-    if (signupError) {
-      signupError.textContent = "";
+    await user.sendEmailVerification();
+    await firebase.auth().signOut();
+    if (loginVerifyNote) {
+      loginVerifyNote.textContent = "Please verify your email before signing in. We sent a verification link.";
     }
-    if (window.M && typeof window.M.updateTextFields === "function") {
-      window.M.updateTextFields();
-    }
+    return false;
   }
 
   window.openAuthModal = openAuthModal;
-
   const existingToken = readSessionCookie();
   if (existingToken) {
     window.__AUTH_TOKEN__ = existingToken;
@@ -166,14 +173,14 @@
 
   if (!firebaseConfig.apiKey || !firebaseConfig.appId || !window.firebase) {
     console.warn("Firebase authentication is not fully configured.");
-    if (loginLink) {
-      loginLink.style.display = "none";
-    }
+    setElementVisible(loginLink, false);
     if (logoutLink) {
-      logoutLink.addEventListener("click", (event) => {
+      logoutLink.addEventListener("click", function (event) {
         event.preventDefault();
         clearAuthToken();
-        window.location.reload();
+        if (!handlePostLoginRedirect()) {
+          window.location.reload();
+        }
       });
     }
     return;
@@ -192,33 +199,33 @@
 
   function handlePostLoginRedirect() {
     if (typeof window.sessionStorage === "undefined") {
-      return null;
+      return false;
     }
     const redirect = window.sessionStorage.getItem("postLoginRedirect");
     if (redirect) {
       window.sessionStorage.removeItem("postLoginRedirect");
       window.location.href = redirect;
-      return redirect;
+      return true;
     }
-    return null;
+    return false;
   }
 
   if (showSignupLink) {
-    showSignupLink.addEventListener("click", (event) => {
+    showSignupLink.addEventListener("click", function (event) {
       event.preventDefault();
       showSignupForm();
     });
   }
 
   if (showLoginLink) {
-    showLoginLink.addEventListener("click", (event) => {
+    showLoginLink.addEventListener("click", function (event) {
       event.preventDefault();
       showLoginForm();
     });
   }
 
   if (loginLink) {
-    loginLink.addEventListener("click", (event) => {
+    loginLink.addEventListener("click", function (event) {
       event.preventDefault();
       showLoginForm();
       openAuthModal();
@@ -226,72 +233,94 @@
   }
 
   if (logoutLink) {
-    logoutLink.addEventListener("click", async (event) => {
+    logoutLink.addEventListener("click", async function (event) {
       event.preventDefault();
       try {
         await auth.signOut();
       } catch (error) {
         console.error("Failed to sign out", error);
         clearAuthToken();
-        window.location.reload();
-      }
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (loginError) {
-        loginError.textContent = "";
-      }
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        closeAuthModal();
-      } catch (error) {
-        console.error("Login failed", error);
-        if (loginError) {
-          loginError.textContent = error.message || "Unable to sign in";
+        if (!handlePostLoginRedirect()) {
+          window.location.reload();
         }
       }
     });
   }
 
-  if (signupForm) {
-    signupForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (signupError) {
-        signupError.textContent = "";
+  if (googleSigninButton) {
+    googleSigninButton.addEventListener("click", async function () {
+      try {
+        await signInWithGoogle(auth);
+      } catch (error) {
+        if (loginError) {loginError.textContent = error.message || "Google sign-in failed";}
       }
+    });
+  }
+
+  if (googleSignupButton) {
+    googleSignupButton.addEventListener("click", async function () {
+      try {
+        await signInWithGoogle(auth);
+      } catch (error) {
+        if (signupError) {signupError.textContent = error.message || "Google sign-up failed";}
+      }
+    });
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (loginError) {loginError.textContent = "";}
+      if (loginVerifyNote) {loginVerifyNote.textContent = "";}
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      try {
+        const credential = await auth.signInWithEmailAndPassword(email, password);
+        const allowed = await requireVerifiedEmail(credential.user);
+        if (allowed) {
+          closeAuthModal();
+        }
+      } catch (error) {
+        if (loginError) {loginError.textContent = error.message || "Unable to sign in";}
+      }
+    });
+  }
+
+  if (signupForm) {
+    signupForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (signupError) {signupError.textContent = "";}
+      if (signupVerifyNote) {signupVerifyNote.textContent = "";}
       const displayName = document.getElementById("signup-display-name").value;
       const email = document.getElementById("signup-email").value;
       const password = document.getElementById("signup-password").value;
       const confirmPassword = document.getElementById("signup-confirm-password").value;
 
       if (password !== confirmPassword) {
-        if (signupError) {
-          signupError.textContent = "Passwords do not match";
-        }
+        if (signupError) {signupError.textContent = "Passwords do not match";}
         return;
       }
 
       try {
         const credential = await auth.createUserWithEmailAndPassword(email, password);
         if (credential && credential.user && displayName) {
-          await credential.user.updateProfile({ displayName });
+          await credential.user.updateProfile({ displayName: displayName });
         }
-        closeAuthModal();
+        if (credential && credential.user) {
+          await credential.user.sendEmailVerification();
+          await auth.signOut();
+        }
+        if (signupVerifyNote) {
+          signupVerifyNote.textContent = "Verification email sent. Verify your inbox, then sign in.";
+        }
+        showLoginForm();
       } catch (error) {
-        console.error("Sign up failed", error);
-        if (signupError) {
-          signupError.textContent = error.message || "Unable to create account";
-        }
+        if (signupError) {signupError.textContent = error.message || "Unable to create account";}
       }
     });
   }
 
-  auth.onIdTokenChanged(async (user) => {
+  auth.onIdTokenChanged(async function (user) {
     if (user) {
       try {
         const tokenResult = await user.getIdTokenResult();
@@ -304,10 +333,10 @@
     }
   });
 
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(function (user) {
     updateAuthUI(Boolean(user));
     window.__CURRENT_USER__ = user
-      ? { uid: user.uid, email: user.email, displayName: user.displayName }
+      ? { uid: user.uid, email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }
       : null;
 
     if (user) {
@@ -322,22 +351,20 @@
       window.location.reload();
     }
   });
-
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.get("authRequired") === "true") {
-    if (typeof window.sessionStorage !== "undefined") {
-      const next = searchParams.get("next");
-      if (next) {
-        window.sessionStorage.setItem("postLoginRedirect", next);
-      }
+    const nextPath = searchParams.get("next");
+    if (nextPath && typeof window.sessionStorage !== "undefined") {
+      window.sessionStorage.setItem("postLoginRedirect", nextPath);
     }
+    showLoginForm();
+    openAuthModal();
     if (window.history && window.history.replaceState) {
       searchParams.delete("authRequired");
       searchParams.delete("next");
       const query = searchParams.toString();
       window.history.replaceState({}, document.title, window.location.pathname + (query ? `?${query}` : ""));
     }
-    showLoginForm();
-    openAuthModal();
   }
+
 })();

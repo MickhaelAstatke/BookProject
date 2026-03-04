@@ -5,7 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const db = require("../models");
-const { requireAdminApi, requireAdminPage } = require("../middleware/auth");
+const { requireAdminApi, requireAdminPage, requireAdminPermission } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -288,7 +288,7 @@ router.get("/admin/materials", requireAdminPage, async (req, res, next) => {
   }
 });
 
-router.get("/api/admin/materials", requireAdminApi, async (req, res, next) => {
+router.get("/api/admin/materials", requireAdminApi, requireAdminPermission("materials:read"), async (req, res, next) => {
   try {
     const materials = await fetchMaterials();
     res.json({ materials });
@@ -297,7 +297,7 @@ router.get("/api/admin/materials", requireAdminApi, async (req, res, next) => {
   }
 });
 
-router.post("/api/admin/materials", requireAdminApi, uploadFields, async (req, res, next) => {
+router.post("/api/admin/materials", requireAdminApi, requireAdminPermission("materials:write"), uploadFields, async (req, res, next) => {
   try {
     const payload = extractMaterialPayload(req, null);
     payload.UserId = req.user.id;
@@ -330,7 +330,7 @@ router.post("/api/admin/materials", requireAdminApi, uploadFields, async (req, r
   }
 });
 
-router.post("/api/admin/materials/import", requireAdminApi, async (req, res) => {
+router.post("/api/admin/materials/import", requireAdminApi, requireAdminPermission("materials:write"), async (req, res) => {
   try {
     let rawMaterials = [];
     if (Array.isArray(req.body.materials)) {
@@ -374,7 +374,7 @@ router.post("/api/admin/materials/import", requireAdminApi, async (req, res) => 
   }
 });
 
-router.put("/api/admin/materials/:id", requireAdminApi, uploadFields, async (req, res, next) => {
+router.put("/api/admin/materials/:id", requireAdminApi, requireAdminPermission("materials:write"), uploadFields, async (req, res, next) => {
   try {
     const material = await db.Material.findByPk(req.params.id);
     if (!material) {
@@ -422,7 +422,7 @@ router.put("/api/admin/materials/:id", requireAdminApi, uploadFields, async (req
   }
 });
 
-router.delete("/api/admin/materials/:id", requireAdminApi, async (req, res, next) => {
+router.delete("/api/admin/materials/:id", requireAdminApi, requireAdminPermission("materials:write"), async (req, res, next) => {
   try {
     const material = await db.Material.findByPk(req.params.id);
     if (!material) {
