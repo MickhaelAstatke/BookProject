@@ -8,6 +8,17 @@ The **EpicBook!** project has transitioned from a one-time purchase cart to a me
 >
 > Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server now auto-loads the first matching `.env*` file it finds, so placing your Firebase keys in `.env.example` is enough for development, while production deployments should provide real secrets via environment variables.
 
+## Node.js & npm Version Setup
+
+This project supports **Node.js 20.x** with **npm 10.x**.
+
+Recommended local setup path:
+
+```bash
+nvm use
+npm ci
+```
+
 ## Database Setup Workflow (Local Development)
 
 - Run schema changes through Sequelize migrations instead of relying on startup auto-sync.
