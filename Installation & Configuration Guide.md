@@ -155,12 +155,18 @@ Create the database:
 CREATE DATABASE bookstore;
 ```
 
-Run the database scripts:
+Run Sequelize migrations and seeds:
 ```bash
-mysql -u root -p < db/BuyTheBook_Schema.sql
-mysql -u root -p < db/author_seed.sql
-mysql -u root -p < db/books_seed.sql
+npm run db:migrate
+npm run db:seed
 ```
+
+To reset local DB state during development:
+```bash
+npm run db:reset
+```
+
+> By default, application startup uses safe sync (no `alter`/`force`). Only use `DB_SYNC_ALTER=true` or `DB_SYNC_FORCE=true` for explicit local development workflows.
 
 ### Troubleshooting
 **Issue:** "ERROR 1049 (42000): Unknown database 'theepicbooks'"
