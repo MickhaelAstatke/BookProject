@@ -19,6 +19,7 @@
   const showLoginLink = document.getElementById("show-login");
   const serverKnowsUser = Boolean(window.__SERVER_KNOWS_USER__);
   const serverCurrentUser = window.__SERVER_CURRENT_USER__ || null;
+  const serverAuthConfigured = window.__SERVER_AUTH_CONFIGURED__ !== false;
 
   function readSessionCookie() {
     const cookie = document.cookie || "";
@@ -340,13 +341,13 @@
       : null;
 
     if (user) {
-      if (!serverKnowsUser && !reloadHandled) {
+      if (serverAuthConfigured && !serverKnowsUser && !reloadHandled) {
         reloadHandled = true;
         if (!handlePostLoginRedirect()) {
           window.location.reload();
         }
       }
-    } else if (serverKnowsUser && !reloadHandled) {
+    } else if (serverAuthConfigured && serverKnowsUser && !reloadHandled) {
       reloadHandled = true;
       window.location.reload();
     }

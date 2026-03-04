@@ -198,6 +198,7 @@
       window.__FIREBASE_CONFIG__ = {{{json firebaseConfig}}};
       window.__SERVER_CURRENT_USER__ = {{{json currentUser}}};
       window.__SERVER_KNOWS_USER__ = {{#if serverKnowsUser}}true{{else}}false{{/if}};
+      window.__SERVER_AUTH_CONFIGURED__ = {{#if isServerAuthConfigured}}true{{else}}false{{/if}};
       window.__CURRENT_USER__ = window.__SERVER_CURRENT_USER__;
     </script>
     <script src="/assets/js/auth.js" type="text/javascript"></script>

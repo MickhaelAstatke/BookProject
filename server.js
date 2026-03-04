@@ -53,6 +53,7 @@ app.use((req, res, next) => {
   res.locals.isFirebaseConfigured = firebaseService.isClientConfigured();
   res.locals.currentUser = null;
   res.locals.serverKnowsUser = false;
+  res.locals.isServerAuthConfigured = firebaseService.isServerAuthConfigured();
   next();
 });
 
