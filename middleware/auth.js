@@ -223,6 +223,10 @@ async function authenticateRequest(req, res, next) {
   req.user = null;
   req.authError = null;
 
+  if (!firebaseService.isServerAuthConfigured()) {
+    return next();
+  }
+
   try {
     const mockUser = await resolveMockUser(req);
     if (mockUser) {

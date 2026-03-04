@@ -31,6 +31,10 @@ function getFirebasePublicKeys() {
   return null;
 }
 
+function isServerAuthConfigured() {
+  return Boolean(getFirebasePublicKeys());
+}
+
 async function verifyIdToken(idToken) {
   if (!idToken) {
     throw new Error("No Firebase ID token supplied");
@@ -105,4 +109,5 @@ module.exports = {
   verifyIdToken,
   getClientConfig,
   isClientConfigured,
+  isServerAuthConfigured,
 };
