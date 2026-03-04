@@ -8,6 +8,29 @@ The **EpicBook!** project has transitioned from a one-time purchase cart to a me
 >
 > Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server now auto-loads the first matching `.env*` file it finds, so placing your Firebase keys in `.env.example` is enough for development, while production deployments should provide real secrets via environment variables.
 
+## Database Setup Workflow (Local Development)
+
+- Run schema changes through Sequelize migrations instead of relying on startup auto-sync.
+- Apply migrations:
+
+  ```bash
+  npm run db:migrate
+  ```
+
+- Seed reference data:
+
+  ```bash
+  npm run db:seed
+  ```
+
+- Reset local database state (undo + re-run migrations + seeds):
+
+  ```bash
+  npm run db:reset
+  ```
+
+> ⚠️ By default, app startup no longer runs `alter`/`force` sync behavior against shared databases. Only set `DB_SYNC_ALTER=true` or `DB_SYNC_FORCE=true` for explicit local-only troubleshooting.
+
 ## Documentation Structure
 
 1️⃣ Plan Catalogue
@@ -126,4 +149,3 @@ Developers can extend the platform by:
 - Connecting the subscription ledger to an authentication system.
 - Integrating payment processors for real billing events.
 - Building analytics around collection engagement and churn.
-

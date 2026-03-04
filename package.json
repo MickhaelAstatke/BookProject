@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "lint": "./node_modules/.bin/eslint \"**/*.js \"",
-    "test": "npm run lint"
+    "test": "npm run lint",
+    "db:migrate": "sequelize db:migrate",
+    "db:seed": "sequelize db:seed:all",
+    "db:reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all"
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,7 @@
     "eslint": "^7.4.0",
     "eslint-plugin-import": "^2.22.0",
     "handlebars": "^4.5.0",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "sequelize-cli": "^6.6.2"
   }
 }

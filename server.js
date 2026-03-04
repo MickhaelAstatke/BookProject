@@ -73,7 +73,8 @@ app.use("/", htmlRoutes);
 const syncOptions = {};
 if (process.env.DB_SYNC_FORCE === "true") {
   syncOptions.force = true;
-} else if (process.env.DB_SYNC_ALTER !== "false") {
+}
+if (process.env.DB_SYNC_ALTER === "true") {
   syncOptions.alter = true;
 }
 
