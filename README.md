@@ -19,6 +19,42 @@ nvm use
 npm ci
 ```
 
+## Docker + Local Startup Flow
+
+Use Docker Compose for the app + MySQL services and keep DB credentials aligned with Sequelize's environment-based config (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`).
+
+1. Start services:
+
+   ```bash
+   docker compose up -d
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm ci
+   ```
+
+3. Run migrations:
+
+   ```bash
+   npm run db:migrate
+   ```
+
+4. (Optional) Seed starter data:
+
+   ```bash
+   npm run db:seed
+   ```
+
+5. Start the app:
+
+   ```bash
+   npm start
+   ```
+
+> The included `Dockerfile` standardizes Node 20 + npm 10 so local and CI environments run the same base image.
+
 ## Database Setup Workflow (Local Development)
 
 - Run schema changes through Sequelize migrations instead of relying on startup auto-sync.
