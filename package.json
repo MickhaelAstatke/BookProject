@@ -7,9 +7,9 @@
     "start": "node server.js",
     "lint": "eslint . --ext .js",
     "test": "npm run lint",
-    "db:migrate": "sequelize db:migrate",
-    "db:seed": "sequelize db:seed:all",
-    "db:reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all",
+    "db:migrate": "sequelize db:migrate --config config/config.js",
+    "db:seed": "sequelize db:seed:all --config config/config.js",
+    "db:reset": "sequelize db:migrate:undo:all --config config/config.js && sequelize db:migrate --config config/config.js && sequelize db:seed:all --config config/config.js",
     "lint:fix": "npm run lint -- --fix"
   },
   "repository": {
