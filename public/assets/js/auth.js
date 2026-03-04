@@ -171,7 +171,7 @@
   attachAjaxAuthorization();
   updateAuthUI(serverKnowsUser);
 
-  if (!firebaseConfig.apiKey || !firebaseConfig.appId || !window.firebase) {
+  if (!firebaseConfig.apiKey || !firebaseConfig.appId || !firebaseConfig.authDomain || !window.firebase) {
     console.warn("Firebase authentication is not fully configured.");
     setElementVisible(loginLink, false);
     if (logoutLink) {

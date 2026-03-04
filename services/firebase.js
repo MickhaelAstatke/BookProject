@@ -98,7 +98,7 @@ function getClientConfig() {
 
 function isClientConfigured() {
   const config = getClientConfig();
-  return Boolean(config.apiKey && config.projectId && config.appId);
+  return Boolean(config.apiKey && config.projectId && config.appId && config.authDomain);
 }
 
 module.exports = {
