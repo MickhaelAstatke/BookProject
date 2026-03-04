@@ -240,6 +240,10 @@ async function authenticateRequest(req, res, next) {
       return next();
     }
 
+    if (!firebaseService.isServerAuthConfigured()) {
+      return next();
+    }
+
     const payload = await firebaseService.verifyIdToken(token);
     const user = await upsertFirebaseUser(payload);
     req.user = user;

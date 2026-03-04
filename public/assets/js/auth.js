@@ -19,6 +19,8 @@
   const showLoginLink = document.getElementById("show-login");
   const serverKnowsUser = Boolean(window.__SERVER_KNOWS_USER__);
   const serverCurrentUser = window.__SERVER_CURRENT_USER__ || null;
+  const serverAuthConfigured = window.__SERVER_AUTH_CONFIGURED__ !== false;
+  const AUTH_SYNC_RELOAD_GUARD_KEY = "__auth_sync_reload_attempted__";
 
   function readSessionCookie() {
     const cookie = document.cookie || "";
@@ -210,6 +212,25 @@
     return false;
   }
 
+  function canTriggerAuthSyncReload() {
+    if (typeof window.sessionStorage === "undefined") {
+      return true;
+    }
+    const alreadyReloaded = window.sessionStorage.getItem(AUTH_SYNC_RELOAD_GUARD_KEY) === "true";
+    if (alreadyReloaded) {
+      return false;
+    }
+    window.sessionStorage.setItem(AUTH_SYNC_RELOAD_GUARD_KEY, "true");
+    return true;
+  }
+
+  function clearAuthSyncReloadGuard() {
+    if (typeof window.sessionStorage === "undefined") {
+      return;
+    }
+    window.sessionStorage.removeItem(AUTH_SYNC_RELOAD_GUARD_KEY);
+  }
+
   if (showSignupLink) {
     showSignupLink.addEventListener("click", function (event) {
       event.preventDefault();
@@ -339,16 +360,22 @@
       ? { uid: user.uid, email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }
       : null;
 
+    if ((user && serverKnowsUser) || (!user && !serverKnowsUser) || !serverAuthConfigured) {
+      clearAuthSyncReloadGuard();
+    }
+
     if (user) {
-      if (!serverKnowsUser && !reloadHandled) {
+      if (serverAuthConfigured && !serverKnowsUser && !reloadHandled) {
         reloadHandled = true;
-        if (!handlePostLoginRedirect()) {
+        if (!handlePostLoginRedirect() && canTriggerAuthSyncReload()) {
           window.location.reload();
         }
       }
-    } else if (serverKnowsUser && !reloadHandled) {
+    } else if (serverAuthConfigured && serverKnowsUser && !reloadHandled) {
       reloadHandled = true;
-      window.location.reload();
+      if (canTriggerAuthSyncReload()) {
+        window.location.reload();
+      }
     }
   });
   const searchParams = new URLSearchParams(window.location.search);
