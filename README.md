@@ -6,7 +6,40 @@ The **EpicBook!** project has transitioned from a one-time purchase cart to a me
 
 > ℹ️ **Environment configuration**
 >
-> Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server now auto-loads the first matching `.env*` file it finds, so placing your Firebase keys in `.env.example` is enough for development, while production deployments should provide real secrets via environment variables.
+> Copy `.env.example` to `.env` (or supply real values in a separate `.env.local`) when running locally. The server auto-loads the first matching `.env*` file it finds.
+
+## Local database setup (default)
+
+Required variables for local development:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+
+Optional but recommended:
+
+- `DATABASE_URL` (single connection string for development)
+- `TEST_DATABASE_URL` (used when `NODE_ENV=test`)
+- `DB_DIALECT` (defaults to `mysql` in config)
+
+Copy/paste example:
+
+```bash
+cp .env.example .env
+
+cat >> .env <<'EOF'
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=bookstore
+DB_USER=root
+DB_PASSWORD=your_local_password
+DB_DIALECT=mysql
+DATABASE_URL=mysql://root:your_local_password@127.0.0.1:3306/bookstore
+TEST_DATABASE_URL=mysql://root:your_local_password@127.0.0.1:3306/bookstore_test
+EOF
+```
 
 ## Documentation Structure
 

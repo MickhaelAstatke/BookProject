@@ -3,15 +3,34 @@
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
+const loadEnv = require("../config/loadEnv");
+
+loadEnv();
+
 const basename = path.basename(module.filename);
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.json")[env];
 let db = {};
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable]);
+
+const getEnvValue = (baseKey) => {
+  const envPrefix = env === "test" ? "TEST_" : "";
+  return process.env[`${envPrefix}${baseKey}`] || process.env[baseKey];
+};
+
+const connectionUrl =
+  (config.use_env_variable && process.env[config.use_env_variable]) ||
+  getEnvValue("DATABASE_URL");
+
+if (connectionUrl) {
+  sequelize = new Sequelize(connectionUrl, config);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(getEnvValue("DB_NAME"), getEnvValue("DB_USER"), getEnvValue("DB_PASSWORD"), {
+    ...config,
+    host: getEnvValue("DB_HOST"),
+    port: getEnvValue("DB_PORT") ? Number(getEnvValue("DB_PORT")) : undefined,
+    dialect: getEnvValue("DB_DIALECT") || config.dialect,
+  });
 }
 
 fs.readdirSync(__dirname)
