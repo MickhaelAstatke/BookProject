@@ -20,14 +20,6 @@
   const serverKnowsUser = Boolean(window.__SERVER_KNOWS_USER__);
   const serverCurrentUser = window.__SERVER_CURRENT_USER__ || null;
 
-  const AUTH_ERROR_MESSAGES = {
-    "auth/popup-closed-by-user": "Google sign-in popup was closed before completing sign in.",
-    "auth/popup-blocked": "Popup was blocked by your browser. Allow popups and try again.",
-    "auth/operation-not-allowed": "Google sign-in is not enabled in Firebase Authentication for this project.",
-    "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication settings.",
-    "auth/network-request-failed": "Network error while contacting Google. Please try again.",
-  };
-
   function readSessionCookie() {
     const cookie = document.cookie || "";
     const segments = cookie.split(";");
@@ -159,23 +151,6 @@
     closeAuthModal();
   }
 
-  function normalizeFirebaseError(error, fallbackMessage) {
-    if (!error) {
-      return fallbackMessage;
-    }
-
-    if (error.code && AUTH_ERROR_MESSAGES[error.code]) {
-      return AUTH_ERROR_MESSAGES[error.code];
-    }
-
-    const rawMessage = typeof error.message === "string" ? error.message : "";
-    if (rawMessage.indexOf("CONFIGURATION_NOT_FOUND") !== -1) {
-      return "Google sign-in is not configured yet. Enable Google provider in Firebase Auth and verify FIREBASE_AUTH_DOMAIN.";
-    }
-
-    return rawMessage || fallbackMessage;
-  }
-
   async function requireVerifiedEmail(user) {
     if (!user || user.emailVerified) {
       return true;
@@ -199,14 +174,6 @@
   if (!firebaseConfig.apiKey || !firebaseConfig.appId || !firebaseConfig.authDomain || !window.firebase) {
     console.warn("Firebase authentication is not fully configured.");
     setElementVisible(loginLink, false);
-    if (googleSigninButton) {
-      googleSigninButton.disabled = true;
-      googleSigninButton.title = "Google sign-in is unavailable until Firebase Auth is configured.";
-    }
-    if (googleSignupButton) {
-      googleSignupButton.disabled = true;
-      googleSignupButton.title = "Google sign-up is unavailable until Firebase Auth is configured.";
-    }
     if (logoutLink) {
       logoutLink.addEventListener("click", function (event) {
         event.preventDefault();
@@ -285,9 +252,7 @@
       try {
         await signInWithGoogle(auth);
       } catch (error) {
-        if (loginError) {
-          loginError.textContent = normalizeFirebaseError(error, "Google sign-in failed");
-        }
+        if (loginError) {loginError.textContent = error.message || "Google sign-in failed";}
       }
     });
   }
@@ -297,9 +262,7 @@
       try {
         await signInWithGoogle(auth);
       } catch (error) {
-        if (signupError) {
-          signupError.textContent = normalizeFirebaseError(error, "Google sign-up failed");
-        }
+        if (signupError) {signupError.textContent = error.message || "Google sign-up failed";}
       }
     });
   }
