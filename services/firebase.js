@@ -1,7 +1,22 @@
 "use strict";
 
-
 const crypto = require("crypto");
+const https = require("https");
+
+const CERTS_URL =
+  "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
+
+// Cache settings
+const DEFAULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const MIN_REFRESH_INTERVAL_MS = 60 * 1000; // don't spam endpoint
+const CACHE_TTL_MS = Number.isFinite(Number(process.env.FIREBASE_PUBLIC_KEYS_CACHE_TTL_MS))
+  ? Number(process.env.FIREBASE_PUBLIC_KEYS_CACHE_TTL_MS)
+  : DEFAULT_CACHE_TTL_MS;
+
+let cachedKeys = null; // object: { kid: certPemString }
+let cachedAtMs = 0;
+let lastFetchAttemptMs = 0;
+let inFlightFetch = null;
 
 function decodeBase64Url(input) {
   if (!input) {
@@ -15,7 +30,7 @@ function decodeBase64Url(input) {
   return Buffer.from(normalized, "base64");
 }
 
-function getFirebasePublicKeys() {
+function parseEnvPublicKeys() {
   if (!process.env.FIREBASE_AUTH_PUBLIC_KEYS) {
     return null;
   }
@@ -28,11 +43,100 @@ function getFirebasePublicKeys() {
   } catch (error) {
     console.error("Failed to parse FIREBASE_AUTH_PUBLIC_KEYS", error);
   }
+
   return null;
 }
 
+function httpsGetJson(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(
+        url,
+        {
+          headers: {
+            // Google endpoint sometimes uses cache headers; accept json.
+            Accept: "application/json",
+          },
+        },
+        (res) => {
+          let data = "";
+          res.setEncoding("utf8");
+          res.on("data", (chunk) => {
+            data += chunk;
+          });
+          res.on("end", () => {
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                resolve(JSON.parse(data));
+              } catch (e) {
+                reject(new Error("Failed to parse Firebase certs JSON"));
+              }
+              return;
+            }
+            reject(
+              new Error(
+                `Failed to fetch Firebase public keys (HTTP ${res.statusCode || "unknown"})`
+              )
+            );
+          });
+        }
+      )
+      .on("error", reject);
+  });
+}
+
+function isCacheFresh() {
+  return cachedKeys && Date.now() - cachedAtMs < CACHE_TTL_MS;
+}
+
+async function fetchAndCacheKeys(force = false) {
+  const now = Date.now();
+  if (!force && isCacheFresh()) {
+    return cachedKeys;
+  }
+
+  // Throttle repeated attempts
+  if (!force && now - lastFetchAttemptMs < MIN_REFRESH_INTERVAL_MS && cachedKeys) {
+    return cachedKeys;
+  }
+
+  if (inFlightFetch) {
+    return inFlightFetch;
+  }
+
+  lastFetchAttemptMs = now;
+  inFlightFetch = (async () => {
+    try {
+      const keys = await httpsGetJson(CERTS_URL);
+      if (!keys || typeof keys !== "object" || Object.keys(keys).length === 0) {
+        throw new Error("Firebase certs endpoint returned no keys");
+      }
+      cachedKeys = keys;
+      cachedAtMs = Date.now();
+      return cachedKeys;
+    } finally {
+      inFlightFetch = null;
+    }
+  })();
+
+  return inFlightFetch;
+}
+
+async function getFirebasePublicKeys(options = {}) {
+  const envOverride = parseEnvPublicKeys();
+  if (envOverride) {
+    // If the user provided keys explicitly, prefer those (keeps old behavior)
+    return envOverride;
+  }
+
+  // Otherwise fetch and cache from Google
+  return fetchAndCacheKeys(Boolean(options.forceRefresh));
+}
+
 function isServerAuthConfigured() {
-  return Boolean(getFirebasePublicKeys());
+  // configured if either env override exists OR we have enough to validate issuer/audience
+  // (keys will be fetched on demand)
+  return Boolean(parseEnvPublicKeys() || process.env.FIREBASE_PROJECT_ID);
 }
 
 async function verifyIdToken(idToken) {
@@ -52,12 +156,20 @@ async function verifyIdToken(idToken) {
   const payload = JSON.parse(decodeBase64Url(payloadPart).toString("utf8"));
   const signature = decodeBase64Url(signaturePart);
 
-  const publicKeys = getFirebasePublicKeys();
+  // First attempt using cached/override keys
+  let publicKeys = await getFirebasePublicKeys();
+  let publicKey = publicKeys ? publicKeys[header.kid] : null;
+
+  // If key not found (rotation), force refresh once (only if not using env override)
+  const usingEnvOverride = Boolean(parseEnvPublicKeys());
+  if (!publicKey && !usingEnvOverride) {
+    publicKeys = await getFirebasePublicKeys({ forceRefresh: true });
+    publicKey = publicKeys ? publicKeys[header.kid] : null;
+  }
+
   if (!publicKeys) {
     throw new Error("Firebase public keys are not configured");
   }
-
-  const publicKey = publicKeys[header.kid];
   if (!publicKey) {
     throw new Error("Unable to locate Firebase public key for token");
   }
