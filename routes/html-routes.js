@@ -83,10 +83,15 @@ router.get("/", async (req, res) => {
 
     const formattedBooks = lodash.map(books, formatBookForDisplay);
 
+    const salutationName = req.user
+      ? req.user.displayName || req.user.guardianName || req.user.email
+      : null;
+
     return res.render("index", {
       books: formattedBooks,
       categories,
       cartCount: cartMeta.cartCount,
+      salutationName,
     });
   } catch (error) {
     console.error("Failed to render index", error);
