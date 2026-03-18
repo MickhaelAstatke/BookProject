@@ -1408,3 +1408,22 @@ img {
     align-items: flex-start;
   }
 }
+
+.home-salutation-wrap {
+  display: grid; /* 🔥 THIS IS THE MAIN FIX */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: .5rem; /* slightly tighter so it feels connected */
+  padding: 1rem clamp(1rem, 3vw, 3.5rem) 2rem;
+  align-items: center;
+}
+
+.home-salutation {
+  font-family: inherit;
+  font-weight: 700; /* slightly lighter so it doesn’t compete */
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  line-height: 1.3;
+  color: #15153a;
+  letter-spacing: 0.2px;
+
+  margin: 0; /* 🔥 prevents weird spacing */
+}

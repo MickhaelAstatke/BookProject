@@ -62,8 +62,16 @@
         </div>
       </div>
 
+
+
+
       <section class="hero" id="hero" data-scroll-animate>
         <div class="hero__content">
+        {{#if salutationName}}
+          <div class="home-salutation-wrap">
+            <div class="home-salutation">Welcome back, {{salutationName}}!</div>
+          </div>
+        {{/if}}          
           <h1 class="hero__title">Spark wonder with epic stories for every young reader.</h1>
           <p class="hero__subtitle">
             Crafted shelves, guided quests, and collectible badges turn reading practice into an adventure. Choose the

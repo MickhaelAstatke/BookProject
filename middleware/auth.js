@@ -10,6 +10,8 @@ const ADMIN_ROLE_PERMISSIONS = {
   support_admin: ["materials:read", "users:read"],
 };
 
+const ALLOW_ADMIN_FROM_TOKEN_CLAIMS = process.env.ALLOW_ADMIN_FROM_TOKEN_CLAIMS === "true";
+
 function parseCookies(cookieHeader) {
   if (!cookieHeader) {
     return {};
@@ -124,6 +126,8 @@ async function upsertFirebaseUser(payload) {
   if (!firebaseUid) {
     throw new Error("Firebase token payload missing subject");
   }
+
+  
 
   const [user] = await db.User.findOrCreate({
     where: { firebaseUid },
