@@ -30,6 +30,15 @@ async function getCartMeta(userId) {
   };
 }
 
+async function getPageBase(userId) {
+  const [categories, cartMeta] = await Promise.all([
+    getDistinctCategories(),
+    getCartMeta(userId),
+  ]);
+  return { categories, cartCount: cartMeta.cartCount, cartMeta };
+}
+
+
 async function fetchGalleryMaterials() {
   const materials = await db.Material.findAll({
     include: [
@@ -102,6 +111,49 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+router.get("/plans", async (req, res) => {
+  try {
+    const { categories, cartCount } = await getPageBase(req.user ? req.user.id : null);
+    return res.render("plans", { categories, cartCount, pageTitle: "Plans & Pricing" });
+  } catch (error) {
+    console.error("Failed to render plans page", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the plans page. Please try again later.",
+      categories: [],
+      cartCount: 0,
+    });
+  }
+});
+
+router.get("/families", async (req, res) => {
+  try {
+    const { categories, cartCount } = await getPageBase(req.user ? req.user.id : null);
+    return res.render("families", { categories, cartCount, pageTitle: "Family Plans" });
+  } catch (error) {
+    console.error("Failed to render families page", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the families page. Please try again later.",
+      categories: [],
+      cartCount: 0,
+    });
+  }
+});
+
+router.get("/shelves", async (req, res) => {
+  try {
+    const { categories, cartCount } = await getPageBase(req.user ? req.user.id : null);
+    return res.render("shelves", { categories, cartCount, pageTitle: "Curated Shelves" });
+  } catch (error) {
+    console.error("Failed to render shelves page", error);
+    return res.status(500).render("error", {
+      message: "We were unable to load the shelves page. Please try again later.",
+      categories: [],
+      cartCount: 0,
+    });
+  }
+});
+
 
 router.post("/category/:categoryName", requireAuthPage, async (req, res) => {
   try {
