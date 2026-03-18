@@ -1,0 +1,16 @@
+<section class="page-hero page-hero--shelves" data-scroll-animate>
+  <h1 class="page-hero__title">Curated shelves to ignite curiosity</h1>
+  <p class="page-hero__subtitle">Handpicked collections across every theme—adventure, science, art, and more.</p>
+</section>
+
+<section class="shelf-promo" data-scroll-animate>
+  <div class="shelf-promo__list">
+    {{#each categories}}
+      <article class="shelf-card">
+        <span class="shelf-card__icon fa fa-book"></span>
+        <h3 class="shelf-card__title">{{DISTINCT}}</h3>
+        <p class="shelf-card__meta">Handpicked adventures &amp; challenges for this theme.</p>
+      </article>
+    {{/each}}
+  </div>
+</section>

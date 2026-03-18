@@ -32,9 +32,9 @@
           <span class="sr-only">Toggle navigation</span>
         </button>
         <nav id="primary-navigation" class="nav-links" data-nav-menu>
-          <a href="#plans" class="nav-link">Plans</a>
-          <a href="#family-signup" class="nav-link">Families</a>
-          <a href="#shelves" class="nav-link">Curated Shelves</a>
+          <a href="/plans" class="nav-link">Plans</a>
+          <a href="/families" class="nav-link">Families</a>
+          <a href="/shelves" class="nav-link">Curated Shelves</a>
           <a href="/gallery" class="nav-link">Gallery</a>
         </nav>
         <div class="nav-actions">
@@ -62,56 +62,6 @@
         </div>
       </div>
 
-
-
-
-      <section class="hero" id="hero" data-scroll-animate>
-        <div class="hero__content">
-        {{#if salutationName}}
-          <div class="home-salutation-wrap">
-            <div class="home-salutation">Welcome back, {{salutationName}}!</div>
-          </div>
-        {{/if}}          
-          <h1 class="hero__title">Spark wonder with epic stories for every young reader.</h1>
-          <p class="hero__subtitle">
-            Crafted shelves, guided quests, and collectible badges turn reading practice into an adventure. Choose the
-            perfect plan and watch your reader level up.
-          </p>
-          <div class="hero__cta">
-            <a href="#plans" class="btn btn--primary">Start free 30-day trial</a>
-            <a href="#family-signup" class="btn btn--secondary">See family plans</a>
-          </div>
-          <ul class="hero__highlights">
-            <li><span class="fa fa-check-circle"></span> Personalized shelves refreshed weekly</li>
-            <li><span class="fa fa-check-circle"></span> Progress badges and reading level tracks</li>
-            <li><span class="fa fa-check-circle"></span> Up to 4 child profiles with one membership</li>
-          </ul>
-        </div>
-        <div class="hero__illustrations" aria-hidden="true">
-          <div class="mascot mascot--explorer"></div>
-          <div class="mascot mascot--scientist"></div>
-          <div class="floating-card floating-card--one">
-            <span class="floating-card__title">Quest of the Week</span>
-            <span class="floating-card__meta">Finish 3 comics to earn the Lightning badge</span>
-          </div>
-          <div class="floating-card floating-card--two">
-            <span class="floating-card__title">Family Streak</span>
-            <span class="floating-card__meta">17 days of shared storytime!</span>
-          </div>
-        </div>
-      </section>
-      <section class="shelf-promo" id="shelves" data-scroll-animate>
-        <h2 class="section-title">Curated shelves to ignite curiosity</h2>
-        <div class="shelf-promo__list">
-          {{#each categories}}
-            <article class="shelf-card">
-              <span class="shelf-card__icon fa fa-book"></span>
-              <h3 class="shelf-card__title">{{DISTINCT}}</h3>
-              <p class="shelf-card__meta">Handpicked adventures &amp; challenges for this theme.</p>
-            </article>
-          {{/each}}
-        </div>
-      </section>
     </header>
 
     <main class="page-content">
@@ -133,8 +83,8 @@
           <div>
             <h4>Explore</h4>
             <ul>
-              <li><a href="#plans">Plans &amp; pricing</a></li>
-              <li><a href="#family-signup">Family signup</a></li>
+              <li><a href="/plans">Plans &amp; pricing</a></li>
+              <li><a href="/families">Family signup</a></li>
               <li><a href="/gallery">Illustration gallery</a></li>
             </ul>
           </div>

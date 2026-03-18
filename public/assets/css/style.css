@@ -48,6 +48,17 @@ a:focus {
   text-decoration: underline;
 }
 
+a.btn:hover,
+a.btn:focus,
+a.nav-pill:hover,
+a.nav-pill:focus,
+a.nav-link:hover,
+a.nav-link:focus,
+a.brand:hover,
+a.brand:focus {
+  text-decoration: none;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -112,6 +123,13 @@ img {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1.75rem clamp(1rem, 3vw, 3rem);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(245, 248, 255, 0.85);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .brand {
@@ -131,12 +149,15 @@ img {
 .nav-link {
   padding: 0.4rem 0.6rem;
   border-radius: 999px;
-  transition: background var(--transition-base), transform var(--transition-base);
+  color: var(--color-deep-blue);
+  font-weight: 600;
+  transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base);
 }
 
 .nav-link:hover,
 .nav-link:focus {
   background: rgba(103, 89, 255, 0.14);
+  color: var(--color-primary);
   transform: translateY(-2px);
 }
 
@@ -387,6 +408,28 @@ img {
 .btn--ghost:hover,
 .btn--ghost:focus {
   background: rgba(103, 89, 255, 0.18);
+}
+
+
+.page-hero {
+  padding: 4rem clamp(1rem, 3vw, 3.5rem) 3rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(103, 89, 255, 0.12), rgba(255, 155, 74, 0.1));
+}
+
+.page-hero__title {
+  font-family: "Fredoka", cursive;
+  font-size: clamp(2rem, 2.5vw + 1.5rem, 3.2rem);
+  color: var(--color-deep-blue);
+  margin-bottom: 1rem;
+}
+
+.page-hero__subtitle {
+  font-size: 1.15rem;
+  color: var(--color-muted);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
 }
 
 .shelf-promo {

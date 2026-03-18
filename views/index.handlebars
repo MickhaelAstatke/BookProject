@@ -4,6 +4,49 @@
 </section>
 {{/if}}
 
+<section class="hero" id="hero" data-scroll-animate>
+  <div class="hero__content">
+    <h1 class="hero__title">Spark wonder with epic stories for every young reader.</h1>
+    <p class="hero__subtitle">
+      Crafted shelves, guided quests, and collectible badges turn reading practice into an adventure. Choose the
+      perfect plan and watch your reader level up.
+    </p>
+    <div class="hero__cta">
+      <a href="/plans" class="btn btn--primary">Start free 30-day trial</a>
+      <a href="/families" class="btn btn--secondary">See family plans</a>
+    </div>
+    <ul class="hero__highlights">
+      <li><span class="fa fa-check-circle"></span> Personalized shelves refreshed weekly</li>
+      <li><span class="fa fa-check-circle"></span> Progress badges and reading level tracks</li>
+      <li><span class="fa fa-check-circle"></span> Up to 4 child profiles with one membership</li>
+    </ul>
+  </div>
+  <div class="hero__illustrations" aria-hidden="true">
+    <div class="mascot mascot--explorer"></div>
+    <div class="mascot mascot--scientist"></div>
+    <div class="floating-card floating-card--one">
+      <span class="floating-card__title">Quest of the Week</span>
+      <span class="floating-card__meta">Finish 3 comics to earn the Lightning badge</span>
+    </div>
+    <div class="floating-card floating-card--two">
+      <span class="floating-card__title">Family Streak</span>
+      <span class="floating-card__meta">17 days of shared storytime!</span>
+    </div>
+  </div>
+</section>
+<section class="shelf-promo" data-scroll-animate>
+  <h2 class="section-title">Curated shelves to ignite curiosity</h2>
+  <div class="shelf-promo__list">
+    {{#each categories}}
+      <article class="shelf-card">
+        <span class="shelf-card__icon fa fa-book"></span>
+        <h3 class="shelf-card__title">{{DISTINCT}}</h3>
+        <p class="shelf-card__meta">Handpicked adventures &amp; challenges for this theme.</p>
+      </article>
+    {{/each}}
+  </div>
+</section>
+
 <section class="intro" data-scroll-animate>
   <div class="intro__badge">Featured plans</div>
   <h2 class="intro__title">Choose a membership that unlocks every shelf and keeps curiosity glowing.</h2>
